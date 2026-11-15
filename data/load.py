@@ -28,6 +28,28 @@ ROOT = Path(__file__).resolve().parent.parent
 MAX_ROWS = 50
 
 
+def make_driver(uri: str, user: str, password: str):
+    """Crea el driver. Per a URIs xifrades (neo4j+s://) es fan servir els
+    certificats arrel de certifi en comptes dels del sistema: a Windows, Python
+    no sempre troba l'arrel que fa servir Aura (SSL.com) i la connexió falla
+    amb 'self-signed certificate in certificate chain'."""
+    scheme, sep, rest = uri.partition("://")
+    if scheme.endswith("+s"):
+        try:
+            import certifi
+            from neo4j import TrustCustomCAs
+        except ImportError:
+            pass
+        else:
+            return GraphDatabase.driver(
+                f"{scheme[:-2]}{sep}{rest}",
+                auth=(user, password),
+                encrypted=True,
+                trusted_certificates=TrustCustomCAs(certifi.where()),
+            )
+    return GraphDatabase.driver(uri, auth=(user, password))
+
+
 def split_statements(text: str) -> list[str]:
     """Separa un script Cypher per ';' respectant cadenes i comentaris."""
     statements: list[str] = []
@@ -114,7 +136,7 @@ def print_counters(summary) -> None:
     }
     if changes:
         print("      canvis: " + ", ".join(f"{k}={v}" for k, v in changes.items()))
-    else:
+    elif summary.query_type in ("w", "rw", "s"):
         print("      canvis: cap (ja existia)")
 
 
@@ -154,7 +176,7 @@ def main() -> int:
             print(f"ERROR: falten NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD a {ROOT / '.env'}")
             return 1
         print(f"Connectant a {uri} com a '{user}'...")
-        driver = GraphDatabase.driver(uri, auth=(user, password))
+        driver = make_driver(uri, user, password)
         try:
             driver.verify_connectivity()
         except (ServiceUnavailable, AuthError) as exc:

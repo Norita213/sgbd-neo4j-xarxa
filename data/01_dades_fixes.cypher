@@ -57,8 +57,10 @@ MERGE (a)-[:NEAR]-(b);
 // 4. Franges horàries (Slot): 7 dies x 14 hores (8..21) = 98 nodes
 // ---------------------------------------------------------------------
 // id = "<dia>-<hora>", p. ex. "Dl-8", "Dg-21". hour = hora d'inici.
+// El MERGE es fa per (day, hour) i després s'hi posa l'id: així s'aprofiten
+// les franges que ja existien sense id (creades pel backend o per l'exemple
+// antic) en lloc de duplicar-les, i les relacions que ja hi apunten es mantenen.
 UNWIND ['Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds', 'Dg'] AS day
 UNWIND range(8, 21) AS hour
-MERGE (s:Slot {id: day + '-' + toString(hour)})
-SET s.day = day,
-    s.hour = hour;
+MERGE (s:Slot {day: day, hour: hour})
+SET s.id = day + '-' + toString(hour);
