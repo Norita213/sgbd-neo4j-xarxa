@@ -1,23 +1,53 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
-from app.db import run_query
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Xarxa d'interessos")
+from db import driver, run_query  # backend/db.py
 
-@app.get("/persons")
-def list_persons():
+from .routers import activities, auth, communities, events, persons, recommendations, zones
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    driver.verify_connectivity()
+    yield
+    driver.close()
+
+
+app = FastAPI(title="Afinit - xarxa d'interessos", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # frontend en desenvolupament
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router)
+app.include_router(persons.router)
+app.include_router(recommendations.router)
+app.include_router(events.router)
+app.include_router(communities.router)
+app.include_router(activities.router)
+app.include_router(zones.router)
+
+
+@app.get("/health", tags=["health"])
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/health/data", tags=["health"])
+def health_data():
+    """Diagnòstic: quines dades encara no s'han adaptat amb data/migracio.cypher.
+    Tot hauria de ser 0 (excepte comunitats sense zona, que és opcional)."""
     return run_query(
-        "MATCH (p:Person) RETURN p.name AS name, p.age AS age ORDER BY name"
-    )
-
-@app.get("/persons/{name}/recommendations")
-def recommendations(name: str):
-    return run_query("""
-        MATCH (p:Person {name: $name})-[:LIKES]->(a:Activity)<-[:LIKES]-(o:Person),
-              (p)-[:AVAILABLE_AT]->(s:Slot)<-[:AVAILABLE_AT]-(o),
-              (p)-[:LIVES_IN]->(:Zone)-[:NEAR*0..1]-(:Zone)<-[:LIVES_IN]-(o)
-        WHERE o <> p AND abs(p.age - o.age) <= 5
-        RETURN o.name AS persona,
-               collect(DISTINCT a.name) AS activitats,
-               count(DISTINCT s) AS franges_compartides
-        ORDER BY franges_compartides DESC
-    """, name=name)
+        """RETURN
+             count { MATCH (p:Person) WHERE p.id IS NULL }          AS persons_without_id,
+             count { MATCH (p:Person) WHERE p.email IS NULL }       AS persons_without_email,
+             count { MATCH (e:Event) WHERE e.id IS NULL }           AS events_without_id,
+             count { MATCH (c:Community) WHERE c.id IS NULL }       AS communities_without_id,
+             count { MATCH (e:Event) WHERE e.date IS :: STRING }    AS events_with_text_date,
+             count { MATCH (c:Community) WHERE NOT (c)-[:IN]->() }  AS communities_without_zone"""
+    )[0]
