@@ -22,7 +22,7 @@ La base de dades és una única instància de **Neo4j AuraDB** al núvol, compar
 3. Carregar l'estructura i les dades fixes a Aura (només cal fer-ho una vegada per a tot l'equip;
    els scripts són idempotents):
    - `python data\load.py data\00_constraints.cypher data\01_dades_fixes.cypher data\exemple_inicial.cypher`
-   - Comprovar-ho: `python data\load.py --param personId=p-paula data\consultes_comprovacio.cypher`
+   - Comprovar-ho: `python data\load.py --param email=paula@example.com data\consultes_comprovacio.cypher`
 4. Arrencar el backend des de la carpeta `backend`: `uvicorn app.main:app --reload`
 5. Documentació de l'API a http://localhost:8000/docs
 

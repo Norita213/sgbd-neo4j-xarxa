@@ -3,7 +3,7 @@
 Ús (des de l'arrel del repositori):
     python data/load.py data/00_constraints.cypher data/01_dades_fixes.cypher
     python data/load.py --dry-run data/01_dades_fixes.cypher
-    python data/load.py --param personId=p-paula data/consultes_comprovacio.cypher
+    python data/load.py --param email=paula@example.com data/consultes_comprovacio.cypher
 
 Llegeix NEO4J_URI, NEO4J_USER i NEO4J_PASSWORD (i opcionalment NEO4J_DATABASE)
 del fitxer .env de l'arrel del repositori.
