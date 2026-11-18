@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from db import run_query
+from backend.db import run_query
 
 from ..schemas import ActivityIn
 

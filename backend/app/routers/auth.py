@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 
-from db import run_query
+from backend.db import run_query
 
 from ..schemas import LoginIn, RegisterIn
 from .persons import set_activities_for
