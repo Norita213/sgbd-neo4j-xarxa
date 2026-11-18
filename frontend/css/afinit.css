@@ -89,7 +89,10 @@
   --danger-soft: #FDECEA;
   --unavailable-bg: #FDEBD8;
   --unavailable-text: #8A3B0C;
+}
 
+/* ---------- Tipografia i arrodoniments (iguals en els dos modes) ---------- */
+:root {
   --font-body: 'Figtree', system-ui, sans-serif;
   --font-title: 'Bricolage Grotesque', 'Figtree', sans-serif;
   --radius-sm: 12px;

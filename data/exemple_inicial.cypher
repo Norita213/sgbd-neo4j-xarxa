@@ -16,7 +16,7 @@
 // ---------------------------------------------------------------------
 // Persones
 // ---------------------------------------------------------------------
-MERGE (paula:Person {email: 'nour@example.com'})
+MERGE (paula:Person {email: 'paula@example.com'})
 ON CREATE SET paula.id = randomUUID(),
               paula.name = 'Paula',
               paula.age = 22,
@@ -31,7 +31,7 @@ ON CREATE SET joana.id = randomUUID(),
 // ---------------------------------------------------------------------
 // Zona on viuen (només si encara no en tenen)
 // ---------------------------------------------------------------------
-UNWIND [['nour@example.com', 'Girona'],
+UNWIND [['paula@example.com', 'Girona'],
         ['joana@example.com', 'Salt']] AS row
 MATCH (p:Person {email: row[0]})
 WHERE NOT EXISTS { (p)-[:LIVES_IN]->(:Zone) }
@@ -41,7 +41,7 @@ MERGE (p)-[:LIVES_IN]->(z);
 // ---------------------------------------------------------------------
 // Interessos (només si encara no en tenen)
 // ---------------------------------------------------------------------
-UNWIND [['nour@example.com', 'Córrer'],
+UNWIND [['paula@example.com', 'Córrer'],
         ['joana@example.com', 'Córrer']] AS row
 MATCH (p:Person {email: row[0]})
 WHERE NOT EXISTS { (p)-[:LIKES]->(:Activity) }
@@ -58,7 +58,7 @@ MERGE (p)-[:LIKES]->(a);
 //                 (8 franges) -> 90 AVAILABLE_AT.
 // ---------------------------------------------------------------------
 UNWIND [
-  {email: 'nour@example.com',
+  {email: 'paula@example.com',
    unavailable: ['Dl-8', 'Dm-8', 'Dc-8', 'Dj-8', 'Dv-8',
                  'Dl-13', 'Dm-13', 'Dc-13', 'Dj-13', 'Dv-13', 'Dv-19']},
   {email: 'joana@example.com',
@@ -75,7 +75,7 @@ MERGE (p)-[:AVAILABLE_AT]->(s);
 // Una quedada organitzada per la Paula
 // (dijous 12/11/2026 de 19 a 20h, Girona). Només si no existeix.
 // ---------------------------------------------------------------------
-MATCH (paula:Person {email: 'nour@example.com'})
+MATCH (paula:Person {email: 'paula@example.com'})
 WHERE NOT EXISTS { (:Event {title: 'Quedada per córrer'}) }
 MATCH (correr:Activity {name: 'Córrer'})
 MATCH (girona:Zone {name: 'Girona'})
