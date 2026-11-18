@@ -90,7 +90,12 @@ class EventIn(BaseModel):
     community_id: str | None = None
 
     @model_validator(mode="after")
-    def fits_in_day(self):
-        if self.start_time.hour + self.duration_hours > 24:
-            raise ValueError("La quedada no pot passar de mitjanit")
+    def fits_in_slots(self):
+        # Les franges (Slot) van de les 8h a les 21h (l'última acaba a les 22h)
+        if self.start_time.hour < 8 or self.start_time.hour + self.duration_hours > 22:
+            raise ValueError("La quedada ha de ser entre les 8:00 i les 22:00")
+        if self.date < dt.date.today():
+            raise ValueError("La data de la quedada no pot ser passada")
+        if not self.title.strip():
+            raise ValueError("La quedada necessita un títol")
         return self

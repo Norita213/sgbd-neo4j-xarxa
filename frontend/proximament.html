@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Properament · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+<div class="app">
+  <main class="screen" style="justify-content: center; text-align: center; gap: 12px">
+    <h1 class="title title-lg" id="section">Properament</h1>
+    <p class="muted" style="margin: 0; font-size: 16px; line-height: 1.45">Aquesta pantalla encara s’està construint.</p>
+    <a class="btn btn-primary" href="quedades.html" style="align-self: center; margin-top: 12px">Anar a quedades</a>
+  </main>
+</div>
+<script src="js/afinit.js"></script>
+<script>
+  const section = new URLSearchParams(location.search).get('s');
+  if (section) document.getElementById('section').textContent = section;
+  const key = (section || '').toLowerCase();
+  if (getUser() && NAV_ITEMS.some(i => i.key === key)) renderNav(key);
+</script>
+</body>
+</html>

@@ -6,19 +6,48 @@ i organitzar quedades i comunitats.
 
 ## Com arrencar-ho
 
-1. Copiar `.env.example` a `.env` i posar-hi la contrasenya.
-2. Arrencar Neo4j: `docker compose up -d`
-3. Obrir http://localhost:7474 i executar `data/exemple_inicial.cypher`.
-4. Arrencar el backend des de la carpeta `backend`:
-   - `python -m venv venv`
-   - `venv\Scripts\activate`
-   - `pip install -r requirements.txt`
-   - `uvicorn app.main:app --reload`
-5. Documentació de l'API a http://localhost:8000/docs
+La base de dades és una única instància de **Neo4j AuraDB** al núvol, compartida per tot l'equip
+(no fem servir Neo4j en local). Model de dades: [`docs/model.md`](docs/model.md).
+
+1. Copiar `.env.example` a `.env` a l'arrel del repositori (no es puja a Git) i posar-hi les credencials d'Aura:
+   ```
+   NEO4J_URI=neo4j+s://XXXXXXXX.databases.neo4j.io
+   NEO4J_USER=neo4j
+   NEO4J_PASSWORD=...
+   ```
+2. Crear l'entorn de Python a l'arrel (PowerShell):
+   - `py -m venv .venv`
+   - `.\.venv\Scripts\Activate.ps1`
+   - `pip install -r backend\requirements.txt`
+3. Carregar l'estructura i les dades fixes a Aura (només cal fer-ho una vegada per a tot l'equip;
+   els scripts són idempotents):
+   - `python data\load.py data\00_constraints.cypher data\01_dades_fixes.cypher data\exemple_inicial.cypher`
+   - Comprovar-ho: `python data\load.py --param email=paula@example.com data\consultes_comprovacio.cypher`
+4. Arrencar el backend des de la carpeta `backend`: `uvicorn app.main:app --reload`
+5. Obrir l'app a http://localhost:8000 (el frontend el serveix el mateix FastAPI).
+   Per entrar, n'hi ha prou amb el correu d'un usuari existent (p. ex. `paula@example.com`).
+6. Documentació de l'API a http://localhost:8000/docs
+
+## Frontend
+
+HTML + JavaScript simple, sense compilar res (carpeta `frontend/`):
+
+- `css/afinit.css`: estils comuns. **Tots els colors són variables a `:root`**: per canviar la tonalitat només cal tocar aquell bloc.
+- `js/afinit.js`: crides a l'API (`api()`), sessió, navegació inferior, dates i targetes.
+- Una pàgina HTML per pantalla. Per afegir la teva: copia l'estructura d'una que ja hi sigui
+  i canvia el `href` del teu apartat a `NAV_ITEMS` (`js/afinit.js`).
+
+| Pantalla | Fitxer | Estat |
+|---|---|---|
+| Inici de sessió | `index.html` | ✅ |
+| Quedades (Per a tu / Totes a prop / les teves) | `quedades.html` | ✅ |
+| Detall de quedada (apuntar-s'hi / desapuntar-se'n) | `quedada.html` | ✅ |
+| Crear quedada | `nova-quedada.html` | ✅ |
+| Afins, Calendari, Comunitats, Perfil, Registre | `proximament.html` | Pendent |
 
 ## Equip
 
 - Nom 1
 - Nom 2
 - Nom 3
-- Nom 4
+- Nour Boudad

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perfil · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+<div class="app">
+  <main class="screen">
+    <div class="topbar">
+      <h1 class="title title-lg">Perfil</h1>
+      <button class="icon-btn" type="button" id="theme"></button>
+    </div>
+
+    <div id="error" class="error hidden" role="alert"></div>
+
+    <section class="profile-card">
+      <div class="avatar profile-avatar" id="avatar"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+        <span class="profile-name" id="name">Carregant…</span>
+        <span class="muted" id="meta"></span>
+      </div>
+    </section>
+
+    <div class="stats">
+      <div class="stat"><span class="num" id="connections">–</span><span>Connexions</span></div>
+      <div class="stat"><span class="num" id="events">–</span><span>Quedades</span></div>
+      <div class="stat"><span class="num" id="communities">–</span><span>Comunitats</span></div>
+    </div>
+
+    <section style="display: flex; flex-direction: column; gap: 10px">
+      <h2 class="section-title" style="margin: 0">El que t’agrada</h2>
+      <div class="event-tags" id="activities"></div>
+    </section>
+
+    <button class="btn btn-secondary btn-block" type="button" id="logout" style="margin-top: auto"></button>
+  </main>
+</div>
+
+<script src="js/afinit.js"></script>
+<script>
+  const user = requireUser();
+  renderNav('perfil');
+  const $ = (id) => document.getElementById(id);
+
+  // Botó lluna / sol: canvia entre mode fosc i mode clar
+  function paintThemeButton() {
+    const dark = getTheme() === 'dark';
+    $('theme').innerHTML = icon(dark ? 'sun' : 'moon', 20);
+    $('theme').setAttribute('aria-label', dark ? 'Canviar a mode clar' : 'Canviar a mode fosc');
+    $('theme').title = dark ? 'Mode clar' : 'Mode fosc';
+  }
+  $('theme').addEventListener('click', () => {
+    setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+    paintThemeButton();
+  });
+  paintThemeButton();
+
+  $('logout').innerHTML = `${icon('logout', 20)}Tancar la sessió`;
+  $('logout').addEventListener('click', logout);
+
+  (async () => {
+    try {
+      const p = await api(`/persons/${encodeURIComponent(user.id)}`);
+      $('avatar').textContent = initials(p.name);
+      $('avatar').classList.add(avatarClass(p.name));
+      $('name').textContent = p.name;
+      $('meta').textContent = [p.age ? `${p.age} anys` : null, p.zone].filter(Boolean).join(' · ');
+      $('connections').textContent = p.connections;
+      $('events').textContent = p.events;
+      $('communities').textContent = p.communities_count;
+      $('activities').innerHTML = p.activities.length
+        ? p.activities.map(a => `<span class="chip">${esc(a)}</span>`).join('')
+        : '<span class="muted">Encara no has triat cap activitat.</span>';
+    } catch (err) {
+      $('error').textContent = err.message;
+      $('error').classList.remove('hidden');
+    }
+  })();
+</script>
+</body>
+</html>

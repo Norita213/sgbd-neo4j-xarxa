@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendari · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+<div class="app">
+  <main class="screen" style="gap: 14px">
+    <h1 class="title title-lg" style="min-height: 44px; display: flex; align-items: center">Calendari</h1>
+
+    <div class="month-bar">
+      <button class="icon-btn" type="button" id="prev" aria-label="Mes anterior"></button>
+      <span class="month" id="month" aria-live="polite"></span>
+      <button class="icon-btn" type="button" id="next" aria-label="Mes següent"></button>
+    </div>
+
+    <div class="calendar">
+      <div class="cal-grid" id="head"></div>
+      <div class="cal-grid" id="grid"></div>
+    </div>
+
+    <div class="legend">
+      <span><i style="background: var(--primary)"></i>Quedades on vas</span>
+      <span><i style="background: var(--muted)"></i>Ja passades</span>
+    </div>
+
+    <section style="display: flex; flex-direction: column; gap: 10px">
+      <h2 class="section-title" style="margin: 0" id="day-title"></h2>
+      <div class="list" id="agenda"></div>
+      <div class="blocks" id="blocks"></div>
+    </section>
+    <div id="error" class="error hidden" role="alert"></div>
+  </main>
+</div>
+
+<script src="js/afinit.js"></script>
+<script>
+  const user = requireUser();
+  renderNav('calendari');
+  const $ = (id) => document.getElementById(id);
+  $('prev').innerHTML = icon('back', 20);
+  $('next').innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>`;
+
+  const HEAD = ['Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds', 'Dg'];
+  $('head').innerHTML = HEAD.map(h => `<span class="cal-head">${h}</span>`).join('');
+
+  const now = new Date();
+  const todayIso = toIso(now);
+  let year = now.getFullYear();
+  let month = now.getMonth();          // 0..11
+  let selected = todayIso;
+  let eventsByDate = {};
+  let unavailable = null;              // { 'Dl': [8, 13], ... } o null si no ha indicat disponibilitat
+
+  function toIso(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  // Hores (8..21) en què NO pot quedar, a partir de les seves AVAILABLE_AT
+  async function loadAvailability() {
+    try {
+      const profile = await api(`/persons/${encodeURIComponent(user.id)}`);
+      const slots = profile.available_slots || [];
+      if (!slots.length) return;      // sense disponibilitat indicada: no marquem res
+      const free = new Set(slots.map(s => `${s.day}-${s.hour}`));
+      unavailable = {};
+      for (const day of HEAD) {
+        unavailable[day] = [];
+        for (let h = 8; h <= 21; h++) if (!free.has(`${day}-${h}`)) unavailable[day].push(h);
+      }
+    } catch { /* el calendari funciona igualment */ }
+  }
+  // [8, 13, 14] -> ['08–09h', '13–15h']
+  function ranges(hours) {
+    const out = [];
+    for (let i = 0; i < hours.length; i++) {
+      const start = hours[i];
+      let end = start + 1;
+      while (i + 1 < hours.length && hours[i + 1] === end) { end++; i++; }
+      out.push(`${String(start).padStart(2, '0')}–${String(end).padStart(2, '0')}h`);
+    }
+    return out;
+  }
+
+  async function loadMonth() {
+    const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+    $('month').textContent = `${capitalize(MONTH_LONG[month])} ${year}`;
+    $('error').classList.add('hidden');
+    try {
+      const events = await api(`/persons/${encodeURIComponent(user.id)}/events/attending?month=${key}`);
+      eventsByDate = {};
+      for (const ev of events) (eventsByDate[ev.date] ||= []).push(ev);
+    } catch (err) {
+      eventsByDate = {};
+      $('error').textContent = err.message;
+      $('error').classList.remove('hidden');
+    }
+    renderGrid();
+    renderDay();
+  }
+
+  function renderGrid() {
+    const first = new Date(year, month, 1);
+    const offset = (first.getDay() + 6) % 7;       // dilluns = 0
+    const days = new Date(year, month + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < offset; i++) cells.push('<span></span>');
+    for (let d = 1; d <= days; d++) {
+      const iso = toIso(new Date(year, month, d));
+      const evs = eventsByDate[iso] || [];
+      const classes = ['cal-day'];
+      if (evs.length) classes.push('has-events');
+      if (iso < todayIso) classes.push('past');
+      if (iso === todayIso) classes.push('today');
+      const label = `${d} de ${MONTH_LONG[month]}${evs.length ? `, ${evs.length} ${evs.length === 1 ? 'quedada' : 'quedades'}` : ''}`;
+      cells.push(`<button type="button" class="${classes.join(' ')}" data-date="${iso}" aria-pressed="${iso === selected}" aria-label="${label}"><span>${d}</span><span class="cal-dot"></span></button>`);
+    }
+    $('grid').innerHTML = cells.join('');
+  }
+
+  function renderDay() {
+    $('day-title').textContent = longDate(selected);
+    const evs = eventsByDate[selected] || [];
+    const past = selected < todayIso;
+    $('agenda').innerHTML = evs.length
+      ? evs.map(ev => `
+          <a class="agenda-item${past ? ' past' : ''}" href="quedada.html?id=${encodeURIComponent(ev.id)}">
+            <div class="bar"></div>
+            <div class="info">
+              <span>${esc(ev.title)}</span>
+              <span>${esc(ev.start_time || '')}${ev.end_time ? ' – ' + esc(ev.end_time) : ''} · ${esc(ev.place || ev.zone)}</span>
+            </div>
+          </a>`).join('')
+      : '<span class="muted" style="font-size: 14px">No tens cap quedada aquest dia.</span>';
+
+    const dayCode = DOW_SHORT[parseDate(selected).getDay()];
+    const blocks = unavailable ? ranges(unavailable[dayCode] || []) : [];
+    const cross = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>';
+    $('blocks').innerHTML = blocks.map(b => `<span class="block-chip">${cross}No disponible ${b}</span>`).join('');
+  }
+
+  $('grid').addEventListener('click', (e) => {
+    const btn = e.target.closest('.cal-day');
+    if (!btn) return;
+    selected = btn.dataset.date;
+    for (const b of $('grid').querySelectorAll('.cal-day')) b.setAttribute('aria-pressed', String(b === btn));
+    renderDay();
+  });
+  function changeMonth(delta) {
+    month += delta;
+    if (month < 0) { month = 11; year--; }
+    if (month > 11) { month = 0; year++; }
+    // Al canviar de mes se selecciona l'1 (o avui, si és el mes actual)
+    selected = (year === now.getFullYear() && month === now.getMonth()) ? todayIso : toIso(new Date(year, month, 1));
+    loadMonth();
+  }
+  $('prev').addEventListener('click', () => changeMonth(-1));
+  $('next').addEventListener('click', () => changeMonth(1));
+
+  loadAvailability().then(loadMonth);
+</script>
+</body>
+</html>
