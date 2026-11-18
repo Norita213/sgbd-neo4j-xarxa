@@ -67,7 +67,7 @@
     document.title = `${ev.title} · AFINIT`;
     els.activity.textContent = ev.activity;
     els.title.textContent = ev.title;
-    const org = ev.organizer ? `Organitza ${ev.organizer.id === user.id ? 'tu' : ev.organizer.name}` : '';
+    const org = ev.organizer ? `Organitzat per ${ev.organizer.id === user.id ? 'tu' : ev.organizer.name}` : '';
     els.organizer.textContent = [org, ev.community].filter(Boolean).join(' · ');
 
     const free = ev.capacity == null ? null : Math.max(ev.capacity - ev.participants, 0);
