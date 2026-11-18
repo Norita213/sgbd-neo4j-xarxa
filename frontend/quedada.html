@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quedada · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <a class="icon-btn on-dark" href="quedades.html" aria-label="Tornar a quedades" id="back"></a>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span class="chip" id="activity">&nbsp;</span>
+      <h1 class="title" style="font-size: 30px; line-height: 1.1" id="title">Carregant…</h1>
+      <span class="hero-sub" id="organizer"></span>
+    </div>
+  </header>
+
+  <main class="screen" style="padding: 20px 24px; gap: 18px">
+    <div id="error" class="error hidden" role="alert"></div>
+
+    <div class="info-box" id="info"></div>
+
+    <p class="description" id="description"></p>
+
+    <section id="connections-section" class="hidden" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 class="section-title" style="margin: 0">Hi van les teves connexions</h2>
+      <div class="people" id="connections"></div>
+    </section>
+
+    <div class="avatar-stack hidden" id="others"></div>
+
+    <button class="btn btn-primary btn-block" type="button" id="action" style="margin-top: auto" disabled>M’hi apunto</button>
+  </main>
+</div>
+
+<script src="js/afinit.js"></script>
+<script>
+  const user = requireUser();
+  const eventId = new URLSearchParams(location.search).get('id');
+  document.getElementById('back').innerHTML = icon('back');
+
+  const els = {
+    activity: document.getElementById('activity'),
+    title: document.getElementById('title'),
+    organizer: document.getElementById('organizer'),
+    info: document.getElementById('info'),
+    description: document.getElementById('description'),
+    connSection: document.getElementById('connections-section'),
+    connections: document.getElementById('connections'),
+    others: document.getElementById('others'),
+    action: document.getElementById('action'),
+    error: document.getElementById('error'),
+  };
+  let ev = null;
+
+  function showError(message) {
+    els.error.textContent = message;
+    els.error.classList.remove('hidden');
+  }
+
+  function render() {
+    document.title = `${ev.title} · AFINIT`;
+    els.activity.textContent = ev.activity;
+    els.title.textContent = ev.title;
+    const org = ev.organizer ? `Organitza ${ev.organizer.id === user.id ? 'tu' : ev.organizer.name}` : '';
+    els.organizer.textContent = [org, ev.community].filter(Boolean).join(' · ');
+
+    const free = ev.capacity == null ? null : Math.max(ev.capacity - ev.participants, 0);
+    const time = ev.end_time ? `${ev.start_time} – ${ev.end_time}` : (ev.start_time || '');
+    els.info.innerHTML = `
+      <div class="info-row">${icon('clock', 20)}<div><span class="main">${longDate(ev.date)}</span><span class="sub">${esc(time)}</span></div></div>
+      <div class="info-row">${icon('pin', 20)}<div><span class="main">${esc(ev.place || ev.zone)}</span><span class="sub">${esc(ev.zone)}</span></div></div>
+      <div class="info-row">${icon('user', 20)}<div>
+        <span class="main">${ev.capacity == null ? `${ev.participants} hi van` : `${ev.participants} de ${ev.capacity} places`}</span>
+        <span class="sub">${free == null ? 'Sense límit de places' : free === 0 ? 'No queden places' : `${free === 1 ? 'Queda 1 plaça lliure' : `Queden ${free} places lliures`}`}</span>
+      </div></div>`;
+
+    els.description.textContent = ev.description || '';
+    els.description.classList.toggle('hidden', !ev.description);
+
+    const others = ev.attendees.filter(a => a.id !== user.id);
+    const connections = others.filter(a => a.is_connection);
+    const rest = others.filter(a => !a.is_connection);
+
+    els.connSection.classList.toggle('hidden', connections.length === 0);
+    els.connections.innerHTML = connections.map(p =>
+      `<div class="person-pill"><div class="avatar ${avatarClass(p.name)}">${esc(initials(p.name))}</div>${esc(p.name)}</div>`
+    ).join('');
+
+    const shown = rest.slice(0, 3);
+    const extra = rest.length - shown.length;
+    els.others.classList.toggle('hidden', rest.length === 0);
+    els.others.innerHTML = `
+      <div class="stack">
+        ${shown.map(p => `<div class="avatar ${avatarClass(p.name)}" title="${esc(p.name)}">${esc(initials(p.name))}</div>`).join('')}
+        ${extra > 0 ? `<div class="avatar more">+${extra}</div>` : ''}
+      </div>
+      <span class="muted" style="font-size: 14px">${connections.length ? 'i més gent' : rest.length === 1 ? 'hi va' : 'hi van'}: ${esc(rest.map(p => p.name).join(', '))}</span>`;
+
+    const isOrganizer = ev.organizer && ev.organizer.id === user.id;
+    const full = ev.capacity != null && ev.participants >= ev.capacity;
+    const btn = els.action;
+    btn.disabled = false;
+    if (isOrganizer) {
+      btn.textContent = 'Organitzes aquesta quedada';
+      btn.className = 'btn btn-secondary btn-block';
+      btn.disabled = true;
+    } else if (ev.attending) {
+      btn.textContent = 'Hi vas · Desapuntar-me';
+      btn.className = 'btn btn-secondary btn-block';
+    } else if (full) {
+      btn.textContent = 'La quedada és plena';
+      btn.className = 'btn btn-secondary btn-block';
+      btn.disabled = true;
+    } else {
+      btn.textContent = 'M’hi apunto';
+      btn.className = 'btn btn-primary btn-block';
+    }
+    btn.style.marginTop = 'auto';
+  }
+
+  async function load() {
+    if (!eventId) { showError('Falta l’identificador de la quedada.'); return; }
+    try {
+      ev = await api(`/events/${encodeURIComponent(eventId)}?person_id=${encodeURIComponent(user.id)}`);
+      render();
+    } catch (err) {
+      els.title.textContent = 'Quedada';
+      showError(err.message);
+    }
+  }
+
+  els.action.addEventListener('click', async () => {
+    els.action.disabled = true;
+    const path = `/events/${encodeURIComponent(eventId)}/attend/${encodeURIComponent(user.id)}`;
+    try {
+      if (ev.attending) {
+        await api(path, { method: 'DELETE' });
+        toast('T’has desapuntat de la quedada.');
+      } else {
+        await api(path, { method: 'POST' });
+        toast('T’hi has apuntat!');
+      }
+      await load();
+    } catch (err) {
+      toast(err.message);
+      els.action.disabled = false;
+    }
+  });
+
+  load();
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quedades · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+</head>
+<body>
+<div class="app">
+  <main class="screen">
+    <div class="topbar">
+      <h1 class="title title-lg">Quedades</h1>
+      <div class="topbar-left" style="gap: 8px">
+        <a class="btn btn-primary btn-small" href="nova-quedada.html"><span id="plus"></span>Crear</a>
+        <button id="logout" class="icon-btn" type="button" aria-label="Tancar la sessió"></button>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Filtre de quedades">
+      <button class="tab" type="button" role="tab" id="tab-foryou" aria-selected="true" aria-controls="list">Per a tu</button>
+      <button class="tab" type="button" role="tab" id="tab-nearby" aria-selected="false" aria-controls="list">Totes a prop</button>
+    </div>
+
+    <div id="list" class="list" role="tabpanel" aria-live="polite"></div>
+
+    <h2 class="section-title">Les teves quedades</h2>
+    <div id="mine" class="list"></div>
+  </main>
+</div>
+
+<script src="js/afinit.js"></script>
+<script>
+  const user = requireUser();
+  renderNav('quedades');
+  document.getElementById('plus').innerHTML = icon('plus', 18, 2.2);
+  const logoutBtn = document.getElementById('logout');
+  logoutBtn.innerHTML = icon('logout', 20);
+  logoutBtn.addEventListener('click', logout);
+
+  const TABS = {
+    foryou: {
+      tab: document.getElementById('tab-foryou'),
+      url: `/persons/${encodeURIComponent(user.id)}/events/for-you`,
+      empty: 'Ara mateix no hi ha quedades de les teves activitats, a prop teu i en hores que tinguis lliures. Mira la pestanya “Totes a prop” o crea’n una.',
+    },
+    nearby: {
+      tab: document.getElementById('tab-nearby'),
+      url: `/persons/${encodeURIComponent(user.id)}/events/nearby`,
+      empty: 'No hi ha quedades a la teva zona ni a les zones veïnes. Crea’n una!',
+    },
+  };
+  const list = document.getElementById('list');
+  const mine = document.getElementById('mine');
+
+  async function showTab(key) {
+    for (const [k, t] of Object.entries(TABS)) t.tab.setAttribute('aria-selected', String(k === key));
+    list.innerHTML = '<div class="empty">Carregant…</div>';
+    try {
+      const events = await api(TABS[key].url);
+      list.innerHTML = events.length
+        ? events.map(eventCard).join('')
+        : `<div class="empty">${TABS[key].empty}</div>`;
+    } catch (err) {
+      list.innerHTML = `<div class="error">${esc(err.message)}</div>`;
+    }
+  }
+
+  async function showMine() {
+    try {
+      const events = await api(`/persons/${encodeURIComponent(user.id)}/events/attending?upcoming=true`);
+      mine.innerHTML = events.length
+        ? events.map(attendingCard).join('')
+        : '<div class="empty">Encara no t’has apuntat a cap quedada.</div>';
+    } catch (err) {
+      mine.innerHTML = `<div class="error">${esc(err.message)}</div>`;
+    }
+  }
+
+  TABS.foryou.tab.addEventListener('click', () => showTab('foryou'));
+  TABS.nearby.tab.addEventListener('click', () => showTab('nearby'));
+  showTab('foryou');
+  showMine();
+</script>
+</body>
+</html>

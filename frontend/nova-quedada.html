@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nova quedada · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+</head>
+<body>
+<div class="app">
+  <form class="screen" id="form" style="padding: 20px 24px 32px" novalidate>
+    <div class="topbar-left">
+      <a class="icon-btn" href="quedades.html" aria-label="Tornar a quedades" id="back"></a>
+      <h1 class="title title-md">Nova quedada</h1>
+    </div>
+
+    <div class="field">
+      <label for="title">Títol</label>
+      <input id="title" class="input" type="text" maxlength="80" placeholder="Quedada per córrer" required>
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="activity">Activitat</label>
+        <select id="activity" class="input" required></select>
+      </div>
+      <div class="field">
+        <label for="community">Comunitat (opcional)</label>
+        <select id="community" class="input"><option value="">Cap</option></select>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="date">Dia</label>
+        <input id="date" class="input" type="date" required>
+      </div>
+      <div class="field">
+        <label for="time">Hora</label>
+        <input id="time" class="input" type="time" value="19:00" min="08:00" max="21:59" step="900" required>
+      </div>
+    </div>
+
+    <div class="row-2-1">
+      <div class="field">
+        <label for="place">Lloc de trobada</label>
+        <input id="place" class="input" type="text" maxlength="80" placeholder="Parc de la Devesa">
+      </div>
+      <div class="field">
+        <label for="capacity">Places</label>
+        <input id="capacity" class="input" type="number" min="2" max="100" value="12" required>
+      </div>
+    </div>
+
+    <div class="row-2-1">
+      <div class="field">
+        <label for="zone">Zona</label>
+        <select id="zone" class="input" required></select>
+      </div>
+      <div class="field">
+        <label for="duration">Durada</label>
+        <select id="duration" class="input">
+          <option value="1">1 h</option><option value="2">2 h</option>
+          <option value="3">3 h</option><option value="4">4 h</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="description">Descripció</label>
+      <textarea id="description" class="input" rows="3" maxlength="500" placeholder="Explica què fareu, el ritme, què cal portar…"></textarea>
+    </div>
+
+    <div class="hint" id="hint"></div>
+    <div id="error" class="error hidden" role="alert"></div>
+
+    <button class="btn btn-primary btn-block" type="submit" style="margin-top: auto">Publicar quedada</button>
+  </form>
+</div>
+
+<script src="js/afinit.js"></script>
+<script>
+  const user = requireUser();
+  document.getElementById('back').innerHTML = icon('back');
+
+  const $ = (id) => document.getElementById(id);
+  const form = $('form');
+  const today = new Date();
+  const isoToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  $('date').min = isoToday;
+  $('date').value = isoToday;
+
+  function option(value, label = value) {
+    return `<option value="${esc(value)}">${esc(label)}</option>`;
+  }
+
+  async function loadOptions() {
+    try {
+      const [activities, zones, communities, profile] = await Promise.all([
+        api('/activities'),
+        api('/zones'),
+        api(`/persons/${encodeURIComponent(user.id)}/communities`),
+        api(`/persons/${encodeURIComponent(user.id)}`),
+      ]);
+      $('activity').innerHTML = activities.map(a => option(a.name)).join('');
+      $('zone').innerHTML = zones.map(z => option(z.name)).join('');
+      $('community').innerHTML = option('', 'Cap') + communities.map(c => option(c.id, c.name)).join('');
+      // Per defecte: la primera activitat que t'agrada i la teva zona
+      if (profile.activities && profile.activities.length) $('activity').value = profile.activities[0];
+      if (profile.zone) $('zone').value = profile.zone;
+      updateHint();
+    } catch (err) {
+      showError(err.message);
+    }
+  }
+
+  // Quan tries una comunitat, l'activitat passa a ser la de la comunitat
+  let communities = [];
+  $('community').addEventListener('change', async () => {
+    if (!communities.length) communities = await api(`/persons/${encodeURIComponent(user.id)}/communities`).catch(() => []);
+    const c = communities.find(x => x.id === $('community').value);
+    if (c) { $('activity').value = c.activity; updateHint(); }
+  });
+
+  function updateHint() {
+    const activity = $('activity').value;
+    const date = $('date').value;
+    const time = $('time').value;
+    if (!activity || !date || !time) { $('hint').classList.add('hidden'); return; }
+    const hour = parseInt(time, 10);
+    const end = hour + parseInt($('duration').value, 10);
+    const day = DOW_LONG[parseDate(date).getDay()].toLowerCase();
+    $('hint').innerHTML = `${icon('share', 20)}<span>La recomanarem a qui li agradi <strong>${esc(activity.toLowerCase())}</strong>, visqui a ${esc($('zone').value || 'la zona')} o a prop i tingui els ${esc(day)}s de ${hour} a ${end}h lliures.</span>`;
+    $('hint').classList.remove('hidden');
+  }
+  for (const id of ['activity', 'date', 'time', 'duration', 'zone']) $(id).addEventListener('change', updateHint);
+
+  function showError(message) {
+    $('error').textContent = message;
+    $('error').classList.remove('hidden');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('error').classList.add('hidden');
+    const title = $('title').value.trim();
+    if (!title) { showError('Posa un títol a la quedada.'); $('title').focus(); return; }
+
+    const body = {
+      organizer_id: user.id,
+      title,
+      activity: $('activity').value,
+      zone: $('zone').value,
+      date: $('date').value,
+      start_time: $('time').value,
+      duration_hours: parseInt($('duration').value, 10),
+      place: $('place').value.trim() || null,
+      description: $('description').value.trim() || null,
+      capacity: parseInt($('capacity').value, 10) || 12,
+      community_id: $('community').value || null,
+    };
+
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+      const created = await api('/events', { method: 'POST', body });
+      location.href = `quedada.html?id=${encodeURIComponent(created.id)}`;
+    } catch (err) {
+      showError(err.message);
+      button.disabled = false;
+    }
+  });
+
+  loadOptions();
+</script>
+</body>
+</html>
