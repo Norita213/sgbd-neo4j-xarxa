@@ -24,7 +24,26 @@ La base de dades és una única instància de **Neo4j AuraDB** al núvol, compar
    - `python data\load.py data\00_constraints.cypher data\01_dades_fixes.cypher data\exemple_inicial.cypher`
    - Comprovar-ho: `python data\load.py --param email=paula@example.com data\consultes_comprovacio.cypher`
 4. Arrencar el backend des de la carpeta `backend`: `uvicorn app.main:app --reload`
-5. Documentació de l'API a http://localhost:8000/docs
+5. Obrir l'app a http://localhost:8000 (el frontend el serveix el mateix FastAPI).
+   Per entrar, n'hi ha prou amb el correu d'un usuari existent (p. ex. `paula@example.com`).
+6. Documentació de l'API a http://localhost:8000/docs
+
+## Frontend
+
+HTML + JavaScript simple, sense compilar res (carpeta `frontend/`):
+
+- `css/afinit.css`: estils comuns. **Tots els colors són variables a `:root`**: per canviar la tonalitat només cal tocar aquell bloc.
+- `js/afinit.js`: crides a l'API (`api()`), sessió, navegació inferior, dates i targetes.
+- Una pàgina HTML per pantalla. Per afegir la teva: copia l'estructura d'una que ja hi sigui
+  i canvia el `href` del teu apartat a `NAV_ITEMS` (`js/afinit.js`).
+
+| Pantalla | Fitxer | Estat |
+|---|---|---|
+| Inici de sessió | `index.html` | ✅ |
+| Quedades (Per a tu / Totes a prop / les teves) | `quedades.html` | ✅ |
+| Detall de quedada (apuntar-s'hi / desapuntar-se'n) | `quedada.html` | ✅ |
+| Crear quedada | `nova-quedada.html` | ✅ |
+| Afins, Calendari, Comunitats, Perfil, Registre | `proximament.html` | Pendent |
 
 ## Equip
 

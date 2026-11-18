@@ -22,7 +22,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-from neo4j.exceptions import AuthError, Neo4jError, ServiceUnavailable
+from neo4j.exceptions import AuthError, Neo4jError, ServiceUnavailable, SessionExpired
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_ROWS = 50
@@ -179,7 +179,7 @@ def main() -> int:
         driver = make_driver(uri, user, password)
         try:
             driver.verify_connectivity()
-        except (ServiceUnavailable, AuthError) as exc:
+        except (ServiceUnavailable, SessionExpired, AuthError) as exc:
             print(f"ERROR de connexió: {exc}")
             driver.close()
             return 2

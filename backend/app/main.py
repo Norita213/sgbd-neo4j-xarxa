@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from db import driver, run_query  # backend/db.py
 
@@ -31,6 +34,16 @@ app.include_router(events.router)
 app.include_router(communities.router)
 app.include_router(activities.router)
 app.include_router(zones.router)
+
+
+# Frontend (HTML + JS simple), servit pel mateix servidor: http://localhost:8000/app/
+FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse("/app/")
 
 
 @app.get("/health", tags=["health"])

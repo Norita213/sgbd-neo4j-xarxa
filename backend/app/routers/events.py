@@ -24,30 +24,43 @@ def create_event(body: EventIn):
     end_hour = hour + body.duration_hours
     minutes = f"{body.start_time.minute:02d}"
 
+    # Zona, activitat i franges són catàleg fix: es busquen amb MATCH, mai es creen.
+    check = run_query(
+        """OPTIONAL MATCH (p:Person {id:$organizer})
+           OPTIONAL MATCH (a:Activity {name:$activity})
+           OPTIONAL MATCH (z:Zone {name:$zone})
+           RETURN p IS NOT NULL AS person, a IS NOT NULL AS activity, z IS NOT NULL AS zone""",
+        organizer=body.organizer_id, activity=body.activity, zone=body.zone,
+    )[0]
+    if not check["person"]:
+        raise HTTPException(404, "Organitzador no trobat")
+    if not check["activity"]:
+        raise HTTPException(422, f"L'activitat '{body.activity}' no existeix")
+    if not check["zone"]:
+        raise HTTPException(422, f"La zona '{body.zone}' no existeix")
+
     rows = run_query(
-        """MATCH (p:Person {id:$organizer}), (a:Activity {name:$activity})
-           MERGE (z:Zone {name:$zone})
+        """MATCH (p:Person {id:$organizer}), (a:Activity {name:$activity}), (z:Zone {name:$zone})
            CREATE (e:Event {id:$id, title:$title, date:date($date),
                             startTime:$start, endTime:$end, place:$place,
-                            description:$description, capacity:$capacity})
+                            description:$description, capacity:$capacity,
+                            createdAt:datetime()})
            CREATE (p)-[:ORGANIZES]->(e), (p)-[:ATTENDS]->(e),
                   (e)-[:OF_TYPE]->(a), (e)-[:IN]->(z)
            WITH e
            OPTIONAL MATCH (c:Community {id:$community_id})
            FOREACH (_ IN CASE WHEN c IS NULL THEN [] ELSE [1] END | CREATE (c)-[:HOSTS]->(e))
            WITH DISTINCT e
-           UNWIND range($hour, $end_hour - 1) AS h
-           MERGE (s:Slot {day:$day, hour:h})
+           MATCH (s:Slot {day:$day})
+           WHERE $hour <= s.hour < $end_hour
            MERGE (e)-[:AT]->(s)
            RETURN DISTINCT e.id AS id""",
         organizer=body.organizer_id, activity=body.activity, zone=body.zone,
-        id=str(uuid.uuid4()), title=body.title, date=body.date.isoformat(),
-        start=f"{hour:02d}:{minutes}", end=f"{end_hour % 24:02d}:{minutes}",
+        id=str(uuid.uuid4()), title=body.title.strip(), date=body.date.isoformat(),
+        start=f"{hour:02d}:{minutes}", end=f"{end_hour:02d}:{minutes}",
         place=body.place, description=body.description, capacity=body.capacity,
         community_id=body.community_id, hour=hour, end_hour=end_hour, day=day,
     )
-    if not rows:
-        raise HTTPException(404, "Organitzador o activitat no trobats")
     return rows[0]
 
 
