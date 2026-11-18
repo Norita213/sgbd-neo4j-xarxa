@@ -7,16 +7,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/afinit.css">
+<script src="js/theme.js"></script>
 </head>
 <body>
 <div class="app">
   <main class="screen">
     <div class="topbar">
       <h1 class="title title-lg">Quedades</h1>
-      <div class="topbar-left" style="gap: 8px">
-        <a class="btn btn-primary btn-small" href="nova-quedada.html"><span id="plus"></span>Crear</a>
-        <button id="logout" class="icon-btn" type="button" aria-label="Tancar la sessió"></button>
-      </div>
+      <a class="btn btn-primary btn-small" href="nova-quedada.html"><span id="plus"></span>Crear</a>
     </div>
 
     <div class="tabs" role="tablist" aria-label="Filtre de quedades">
@@ -36,9 +34,6 @@
   const user = requireUser();
   renderNav('quedades');
   document.getElementById('plus').innerHTML = icon('plus', 18, 2.2);
-  const logoutBtn = document.getElementById('logout');
-  logoutBtn.innerHTML = icon('logout', 20);
-  logoutBtn.addEventListener('click', logout);
 
   const TABS = {
     foryou: {

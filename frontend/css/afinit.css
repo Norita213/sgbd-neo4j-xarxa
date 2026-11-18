@@ -51,6 +51,44 @@
   --danger-soft: #3A1717;
   --unavailable-bg: #3A2412;    /* blocs "No disponible" del calendari */
   --unavailable-text: #FFC48A;
+}
+
+/* ---------- Mode clar (el botó de la lluna del perfil hi posa data-theme="light") ---------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --primary: #0062E6;           /* blau elèctric: més fosc que el neó perquè es llegeixi sobre blanc */
+  --primary-hover: #004FB8;
+  --on-primary: #FFFFFF;
+  --primary-soft: #E3EEFF;
+  --primary-soft-text: #0B3C80;
+  --glow: 0 0 14px rgba(0, 98, 230, 0.25);
+  --accent: #7B3FE4;
+  --accent-soft: #EFE6FF;
+  --accent-soft-text: #4B1FA0;
+  --ink: #0B0D12;
+  --text: #2A2F3A;
+  --muted: #5A6272;
+  --page: #E4E7EE;
+  --bg: #F5F6F9;
+  --surface: #FFFFFF;
+  --track: #E8EBF1;
+  --border: #DCE0E8;
+  --border-input: #C5CBD6;
+  --divider: #EEF0F4;
+  --block: #0B0D12;             /* la capçalera del detall continua sent negra */
+  --block-2: #22262F;
+  --on-block: #FFFFFF;
+  --on-block-muted: #B8BFCC;
+  --badge-bg: #0B0D12;
+  --badge-text: #FFFFFF;
+  --tab-active-bg: #FFFFFF;
+  --tab-active-text: #0B0D12;
+  --other-soft: #DDF5F0;
+  --other-soft-text: #0E5E52;
+  --danger: #B42318;
+  --danger-soft: #FDECEA;
+  --unavailable-bg: #FDEBD8;
+  --unavailable-text: #8A3B0C;
 
   --font-body: 'Figtree', system-ui, sans-serif;
   --font-title: 'Bricolage Grotesque', 'Figtree', sans-serif;
@@ -335,3 +373,19 @@ select.input { padding: 0 8px; }
   display: flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 10px;
   background: var(--unavailable-bg); color: var(--unavailable-text); font-size: 12px; font-weight: 600;
 }
+
+/* ---------- Perfil ---------- */
+.profile-card {
+  display: flex; align-items: center; gap: 14px; padding: 16px;
+  border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--border);
+}
+.profile-avatar { width: 64px; height: 64px; font-size: 22px; }
+.profile-name { font-family: var(--font-title); font-size: 22px; font-weight: 700; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.stat {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 6px;
+  border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border);
+  font-size: 12px; color: var(--muted);
+}
+.stat .num { font-size: 22px; font-weight: 700; color: var(--ink); }
+.icon-btn { cursor: pointer; }

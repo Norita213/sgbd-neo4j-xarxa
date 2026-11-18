@@ -51,6 +51,15 @@ function requireUser() {
   return user;
 }
 
+// ---------- Tema fosc / clar (js/theme.js l'aplica en carregar) ----------
+function getTheme() {
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  try { localStorage.setItem('afinit.theme', theme); } catch { /* sense emmagatzematge */ }
+}
+
 // ---------- Utilitats ----------
 function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, c =>
@@ -117,6 +126,8 @@ const ICONS = {
   share: '<circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path>',
   profile: '<circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path>',
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path>',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>',
+  sun: '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>',
 };
 function icon(name, size = 22, strokeWidth = 2) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
@@ -129,7 +140,7 @@ const NAV_ITEMS = [
   { key: 'quedades', label: 'Quedades', icon: 'flag', href: 'quedades.html' },
   { key: 'calendari', label: 'Calendari', icon: 'calendar', href: 'calendari.html' },
   { key: 'comunitats', label: 'Comunitats', icon: 'share', href: 'proximament.html?s=Comunitats' },
-  { key: 'perfil', label: 'Perfil', icon: 'profile', href: 'proximament.html?s=Perfil' },
+  { key: 'perfil', label: 'Perfil', icon: 'profile', href: 'perfil.html' },
 ];
 function renderNav(active) {
   const nav = document.createElement('nav');
