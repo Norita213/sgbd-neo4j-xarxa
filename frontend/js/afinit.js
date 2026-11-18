@@ -127,7 +127,7 @@ function icon(name, size = 22, strokeWidth = 2) {
 const NAV_ITEMS = [
   { key: 'afins', label: 'Afins', icon: 'users', href: 'proximament.html?s=Afins' },
   { key: 'quedades', label: 'Quedades', icon: 'flag', href: 'quedades.html' },
-  { key: 'calendari', label: 'Calendari', icon: 'calendar', href: 'proximament.html?s=Calendari' },
+  { key: 'calendari', label: 'Calendari', icon: 'calendar', href: 'calendari.html' },
   { key: 'comunitats', label: 'Comunitats', icon: 'share', href: 'proximament.html?s=Comunitats' },
   { key: 'perfil', label: 'Perfil', icon: 'profile', href: 'proximament.html?s=Perfil' },
 ];

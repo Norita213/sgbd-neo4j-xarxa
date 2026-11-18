@@ -5,33 +5,52 @@
    variables d'aquest bloc :root. Cap altre fitxer té colors escrits.
    ===================================================================== */
 :root {
+  /* Tema: negre i blau neó */
+  color-scheme: dark;           /* calendaris i desplegables natius en fosc */
+
   /* Color principal (botons, enllaços, icones, pestanya activa) */
-  --primary: #0F6B5C;
-  --primary-hover: #0A4F44;
-  --primary-soft: #DCEDE8;      /* fons suau: etiquetes, avisos */
-  --primary-soft-text: #1F4A41; /* text sobre --primary-soft */
+  --primary: #1EA7FF;           /* blau neó */
+  --primary-hover: #5CC0FF;
+  --on-primary: #04121F;        /* text sobre el blau neó (fosc: es llegeix millor que el blanc) */
+  --primary-soft: #0D2335;      /* fons suau: etiquetes, avisos */
+  --primary-soft-text: #A8DBFF; /* text sobre --primary-soft */
+  --glow: 0 0 18px rgba(30, 167, 255, 0.35); /* resplendor neó dels botons */
 
   /* Color d'accent (segon color del logo, avatars) */
-  --accent: #E07A2E;
-  --accent-soft: #FCE6D4;
-  --accent-soft-text: #8A3B0C;
+  --accent: #B26BFF;            /* lila neó */
+  --accent-soft: #2A1A3F;
+  --accent-soft-text: #DDBEFF;
 
   /* Neutres */
-  --ink: #16201C;               /* text principal i capçaleres fosques */
-  --ink-2: #2A3631;             /* botó sobre capçalera fosca */
-  --ink-on-dark-muted: #C8D2CE; /* text secundari sobre fons fosc */
-  --text: #2E3833;              /* paràgrafs */
-  --muted: #56625D;             /* text secundari */
-  --bg: #F4F6F5;                /* fons de pantalla */
-  --surface: #FFFFFF;           /* targetes, camps */
-  --track: #E6EBE9;             /* fons de les pestanyes */
-  --border: #DDE3E0;
-  --border-input: #C9D2CE;
-  --divider: #EEF1F0;
-  --other-soft: #E4E7F5;        /* tercer color d'avatars */
-  --other-soft-text: #2E3A80;
-  --danger: #B42318;
-  --danger-soft: #FDECEA;
+  --ink: #F2F5FA;               /* text principal */
+  --text: #D3D9E3;              /* paràgrafs */
+  --muted: #8E97A8;             /* text secundari */
+  --page: #000000;              /* fons de fora de l'app (ordinador) */
+  --bg: #07080B;                /* fons de pantalla */
+  --surface: #12151C;           /* targetes, camps */
+  --track: #1A1E27;             /* fons de les pestanyes */
+  --border: #232833;
+  --border-input: #333A47;
+  --divider: #1C2029;
+
+  /* Blocs destacats: capçalera del detall, notificacions */
+  --block: #10131A;
+  --block-2: #222834;           /* botó sobre un bloc */
+  --on-block: #F2F5FA;
+  --on-block-muted: #A3ABBA;
+
+  /* Etiqueta de data de les targetes i pestanya activa */
+  --badge-bg: var(--primary);
+  --badge-text: var(--on-primary);
+  --tab-active-bg: var(--primary-soft);
+  --tab-active-text: var(--primary-soft-text);
+
+  --other-soft: #12302E;        /* tercer color d'avatars */
+  --other-soft-text: #7FE3D2;
+  --danger: #FF8A80;
+  --danger-soft: #3A1717;
+  --unavailable-bg: #3A2412;    /* blocs "No disponible" del calendari */
+  --unavailable-text: #FFC48A;
 
   --font-body: 'Figtree', system-ui, sans-serif;
   --font-title: 'Bricolage Grotesque', 'Figtree', sans-serif;
@@ -42,7 +61,7 @@
 
 * { box-sizing: border-box; }
 
-html { background: var(--border); }
+html { background: var(--page); }
 
 body {
   margin: 0;
@@ -102,7 +121,7 @@ a:hover { color: var(--primary-hover); }
   background: var(--surface); border: 1px solid var(--border); color: var(--ink);
 }
 .icon-btn:hover { color: var(--ink); background: var(--divider); }
-.icon-btn.on-dark { background: var(--ink-2); border: none; color: #FFFFFF; }
+.icon-btn.on-dark { background: var(--block-2); border: none; color: var(--on-block); }
 
 /* ---------- Botons ---------- */
 .btn {
@@ -112,8 +131,8 @@ a:hover { color: var(--primary-hover); }
   font-family: inherit; font-size: 16px; font-weight: 600;
   text-decoration: none; cursor: pointer;
 }
-.btn-primary { background: var(--primary); color: #FFFFFF; }
-.btn-primary:hover { background: var(--primary-hover); color: #FFFFFF; }
+.btn-primary { background: var(--primary); color: var(--on-primary); box-shadow: var(--glow); }
+.btn-primary:hover { background: var(--primary-hover); color: var(--on-primary); }
 .btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--border-input); }
 .btn-secondary:hover { background: var(--divider); color: var(--ink); }
 .btn-small { height: 42px; padding: 0 14px; border-radius: var(--radius-sm); font-size: 14px; }
@@ -164,7 +183,7 @@ select.input { padding: 0 8px; }
   background: transparent; color: var(--muted);
   font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
 }
-.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); font-weight: 600; }
+.tab[aria-selected="true"] { background: var(--tab-active-bg); color: var(--tab-active-text); font-weight: 600; }
 
 /* ---------- Etiqueta d'activitat ---------- */
 .chip {
@@ -183,7 +202,7 @@ select.input { padding: 0 8px; }
 .event-card:hover { color: var(--ink); border-color: var(--border-input); }
 .date-badge {
   width: 56px; height: 66px; flex-shrink: 0;
-  border-radius: var(--radius-sm); background: var(--ink); color: #FFFFFF;
+  border-radius: var(--radius-sm); background: var(--badge-bg); color: var(--badge-text);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 .date-badge .dow { font-size: 11px; font-weight: 600; text-transform: uppercase; }
@@ -202,7 +221,7 @@ select.input { padding: 0 8px; }
 .attending-card:hover { color: var(--ink); }
 .attending-card .check {
   width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-sm);
-  background: var(--primary); color: #FFFFFF;
+  background: var(--primary); color: var(--on-primary);
   display: flex; align-items: center; justify-content: center;
 }
 .attending-card .info { display: flex; flex-direction: column; gap: 2px; }
@@ -211,11 +230,11 @@ select.input { padding: 0 8px; }
 
 /* ---------- Detall de quedada ---------- */
 .hero {
-  background: var(--ink); color: #FFFFFF;
+  background: var(--block); color: var(--on-block); border-bottom: 1px solid var(--border);
   padding: 20px 24px 26px; display: flex; flex-direction: column; gap: 18px;
 }
 .hero .chip { align-self: flex-start; padding: 5px 10px; }
-.hero-sub { font-size: 14px; color: var(--ink-on-dark-muted); }
+.hero-sub { font-size: 14px; color: var(--on-block-muted); }
 .info-box {
   display: flex; flex-direction: column;
   border-radius: 16px; background: var(--surface); border: 1px solid var(--border);
@@ -243,7 +262,7 @@ select.input { padding: 0 8px; }
 .avatar.c1 { background: var(--accent-soft); color: var(--accent-soft-text); }
 .avatar.c2 { background: var(--other-soft); color: var(--other-soft-text); }
 .avatar.c3 { background: var(--divider); color: var(--ink); }
-.avatar.more { background: var(--ink); color: #FFFFFF; }
+.avatar.more { background: var(--primary); color: var(--on-primary); }
 .avatar-stack { display: flex; align-items: center; gap: 12px; }
 .avatar-stack .stack { display: flex; }
 .avatar-stack .avatar { width: 34px; height: 34px; font-size: 11px; border: 2px solid var(--bg); }
@@ -265,6 +284,54 @@ select.input { padding: 0 8px; }
 .toast {
   position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%);
   max-width: 360px; padding: 12px 16px; border-radius: var(--radius);
-  background: var(--ink); color: #FFFFFF; font-size: 14px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  background: var(--block-2); color: var(--on-block); font-size: 14px;
+  border: 1px solid var(--border-input); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Calendari ---------- */
+.month-bar { display: flex; align-items: center; justify-content: space-between; }
+.month-bar .month { font-size: 17px; font-weight: 600; }
+.month-bar .icon-btn { cursor: pointer; }
+.calendar {
+  padding: 12px; border-radius: var(--radius-lg);
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-head { text-align: center; font-size: 12px; font-weight: 600; color: var(--muted); }
+.cal-day {
+  height: 42px; padding: 0;
+  border-radius: var(--radius-sm); border: 2px solid transparent;
+  background: transparent; color: var(--ink);
+  font-family: inherit; font-size: 14px; font-weight: 400; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+}
+.cal-day:hover { background: var(--track); }
+.cal-day.has-events { font-weight: 600; }
+.cal-day.today { border-color: var(--primary); }
+.cal-day[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); font-weight: 600; box-shadow: var(--glow); }
+.cal-dot { width: 6px; height: 6px; border-radius: 50%; background: transparent; }
+.cal-day.has-events .cal-dot { background: var(--primary); }
+.cal-day.has-events.past .cal-dot { background: var(--muted); }
+.cal-day[aria-pressed="true"] .cal-dot { background: var(--on-primary); }
+.legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.agenda-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-radius: 16px; background: var(--primary-soft); color: var(--ink); text-decoration: none;
+}
+.agenda-item:hover { color: var(--ink); }
+.agenda-item .bar { width: 4px; align-self: stretch; border-radius: 2px; background: var(--primary); }
+.agenda-item.past { background: var(--track); }
+.agenda-item.past .bar { background: var(--muted); }
+.agenda-item .info { display: flex; flex-direction: column; gap: 2px; }
+.agenda-item .info span:first-child { font-size: 15px; font-weight: 600; }
+.agenda-item .info span:last-child { font-size: 13px; color: var(--primary-soft-text); }
+.agenda-item.past .info span:last-child { color: var(--muted); }
+.blocks { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.block-chip {
+  display: flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 10px;
+  background: var(--unavailable-bg); color: var(--unavailable-text); font-size: 12px; font-weight: 600;
 }
