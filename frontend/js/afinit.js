@@ -136,7 +136,7 @@ function icon(name, size = 22, strokeWidth = 2) {
 // ---------- Navegació inferior ----------
 // Cada membre de l'equip canvia el seu 'href' quan tingui la pantalla feta.
 const NAV_ITEMS = [
-  { key: 'afins', label: 'Afins', icon: 'users', href: 'proximament.html?s=Afins' },
+  { key: 'afins', label: 'Afins', icon: 'users', href: 'afins.html' },
   { key: 'quedades', label: 'Quedades', icon: 'flag', href: 'quedades.html' },
   { key: 'calendari', label: 'Calendari', icon: 'calendar', href: 'calendari.html' },
   { key: 'comunitats', label: 'Comunitats', icon: 'share', href: 'proximament.html?s=Comunitats' },
