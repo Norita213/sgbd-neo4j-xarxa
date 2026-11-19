@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Persones afins · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+<div class="app">
+  <main class="screen">
+    <h1 class="title title-lg">Persones afins</h1>
+    <p class="muted" style="margin: 0">Activitats i hores lliures en comú, a prop teu.</p>
+    <div id="activity-filters" class="people" role="group" aria-label="Filtra per activitat" hidden></div>
+    <div id="recommendations" class="list" aria-live="polite"></div>
+    <button id="retry" class="btn btn-secondary" type="button" hidden>Torna-ho a provar</button>
+  </main>
+</div>
+<script src="js/afinit.js"></script>
+<script src="js/afins.js"></script>
+</body>
+</html>
