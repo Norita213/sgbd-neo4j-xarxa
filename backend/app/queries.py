@@ -5,7 +5,7 @@ converteix en la 'targeta' que mostra l'app. Necessita el paràmetre $viewer
 (id de qui mira, o None) per calcular `attending`.
 """
 
-EVENT_TAIL = """
+EVENT_FIELDS = """
 WITH DISTINCT e
 MATCH (e)-[:OF_TYPE]->(a:Activity)
 MATCH (e)-[:IN]->(z:Zone)
@@ -19,5 +19,6 @@ RETURN e.id AS id, e.title AS title, toString(e.date) AS date,
        participants, coalesce($viewer IN [x IN attendees | x.id], false) AS attending,
        size([x IN attendees WHERE $viewer IS NOT NULL
              AND EXISTS { (x)-[:CONNECTED_WITH]-(:Person {id: $viewer}) }]) AS connections_attending
-ORDER BY e.date, e.startTime
 """
+
+EVENT_TAIL = EVENT_FIELDS + "ORDER BY e.date, e.startTime\n"
