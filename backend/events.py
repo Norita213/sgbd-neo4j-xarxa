@@ -2,10 +2,10 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 
-from db import run_query
+from backend.db import run_query
 
-from ..queries import EVENT_TAIL
-from ..schemas import DAYS, EventIn
+from .app.queries import EVENT_TAIL
+from .app.schemas import DAYS, EventIn
 
 router = APIRouter(prefix="/events", tags=["events"])
 
