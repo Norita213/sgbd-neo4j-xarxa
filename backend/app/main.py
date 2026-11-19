@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -5,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from neo4j.exceptions import ServiceUnavailable, SessionExpired
 
 from db import driver, run_query  # backend/db.py
 
@@ -13,7 +15,16 @@ from .routers import activities, auth, communities, events, persons, recommendat
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    driver.verify_connectivity()
+    # La connexió TLS amb Aura de vegades es talla (SSLEOFError) en algunes xarxes:
+    # es reintenta uns quants cops abans de donar l'arrencada per fallida.
+    for attempt in range(1, 6):
+        try:
+            driver.verify_connectivity()
+            break
+        except (ServiceUnavailable, SessionExpired):
+            if attempt == 5:
+                raise
+            await asyncio.sleep(1)
     yield
     driver.close()
 
