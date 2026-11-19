@@ -693,6 +693,20 @@ button.community-card-content:focus-visible {
   .cal-dot { bottom: 9px; width: 6px; height: 6px; }
   .month-bar .month { font-size: 20px; }
 
+  /* ---------- Comunitats ---------- */
+  .community-search { max-width: 560px; }
+  .community-sections { gap: 28px; }
+  .community-section { gap: 14px; }
+  .community-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .community-grid .community-card-content { padding: 20px; gap: 14px; }
+  .community-list.list { gap: 16px; }
+  .community-card { padding: 14px; transition: border-color .15s ease, transform .15s ease; }
+  .community-grid .community-card { padding: 0; }
+  .community-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+  .community-avatar { width: 48px; height: 48px; font-size: 14px; }
+  .community-name { font-size: 17px; }
+  .community-meta { font-size: 14px; }
+
   /* ---------- Perfil ---------- */
   .profile-layout { grid-template-columns: minmax(0, 1fr) 380px; }
   .profile-card { padding: 28px; gap: 20px; }
