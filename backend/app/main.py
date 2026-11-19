@@ -1,8 +1,10 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,21 +14,32 @@ from db import driver, run_query  # backend/db.py
 
 from .routers import activities, auth, communities, events, persons, recommendations, zones
 
+logger = logging.getLogger(__name__)
+NEO4J_RETRY_DELAYS = (1, 2, 4, 8)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # La connexió TLS amb Aura de vegades es talla (SSLEOFError) en algunes xarxes:
-    # es reintenta uns quants cops abans de donar l'arrencada per fallida.
-    for attempt in range(1, 6):
-        try:
-            driver.verify_connectivity()
-            break
-        except (ServiceUnavailable, SessionExpired):
-            if attempt == 5:
-                raise
-            await asyncio.sleep(1)
-    yield
-    driver.close()
+    max_attempts = len(NEO4J_RETRY_DELAYS) + 1
+    try:
+        for attempt in range(1, max_attempts + 1):
+            try:
+                await run_in_threadpool(driver.verify_connectivity)
+            except (ServiceUnavailable, SessionExpired) as error:
+                if attempt == max_attempts:
+                    logger.error("No s'ha pogut connectar amb Neo4j després de %d intents.", max_attempts)
+                    raise
+                delay = NEO4J_RETRY_DELAYS[attempt - 1]
+                logger.warning(
+                    "Connexió amb Neo4j fallida (%d/%d). Nou intent d'aquí a %d s: %s",
+                    attempt, max_attempts, delay, error,
+                )
+                await asyncio.sleep(delay)
+            else:
+                break
+        yield
+    finally:
+        await run_in_threadpool(driver.close)
 
 
 app = FastAPI(title="Afinit - xarxa d'interessos", lifespan=lifespan)
