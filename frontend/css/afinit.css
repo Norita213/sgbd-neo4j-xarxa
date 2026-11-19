@@ -501,3 +501,256 @@ button.community-card-content:focus-visible {
 }
 .stat .num { font-size: 22px; font-weight: 700; color: var(--ink); }
 .icon-btn { cursor: pointer; }
+
+/* ---------- Persones afins: franges en comú ---------- */
+.slot-list {
+  display: flex; flex-direction: column; gap: 2px;
+  margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--divider);
+  font-size: 13px; color: var(--text);
+}
+.slot-label {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 2px;
+  font-size: 12px; font-weight: 600; color: var(--muted);
+}
+.slot-label svg { color: var(--primary); }
+
+/* =====================================================================
+   DISTRIBUCIÓ: mòbil vs ordinador
+   ---------------------------------------------------------------------
+   Al mòbil, els contenidors de distribució (.layout, .detail-main...)
+   no fan res (display: contents): les pantalles es veuen com sempre.
+   A l'ordinador (>= 1000px) l'app passa a ser una web: capçalera
+   superior, contingut ample i pantalles en columnes.
+   ===================================================================== */
+.site-header, .desktop-only, .login-form-title { display: none; }
+.layout, .layout-main, .layout-aside,
+.login-intro, .detail-main, .detail-aside { display: contents; }
+.page-heading { display: flex; flex-direction: column; gap: 6px; }
+.page-sub { margin: 0; }
+.screen.detail #error { order: -2; }
+.screen.detail #info { order: -1; }
+
+@media (min-width: 1000px) {
+  html { background: var(--bg); }
+  .mobile-only, .bottom-nav { display: none !important; }
+  .desktop-only { display: block; }
+
+  /* ---------- Capçalera superior ---------- */
+  .site-header {
+    display: block;
+    position: sticky; top: 0; z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-header-inner {
+    height: 68px; padding: 0 40px;
+    display: flex; align-items: center; gap: 36px;
+  }
+  .site-brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-title); font-size: 22px; font-weight: 700; letter-spacing: 1px;
+    color: var(--ink); text-decoration: none;
+  }
+  .site-brand:hover { color: var(--ink); }
+  .site-nav { flex: 1; display: flex; gap: 4px; }
+  .site-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px; border-radius: var(--radius-sm);
+    color: var(--muted); font-size: 15px; font-weight: 500; text-decoration: none;
+    transition: background .15s, color .15s;
+  }
+  .site-nav a svg { width: 18px; height: 18px; }
+  .site-nav a:hover { color: var(--ink); background: var(--divider); }
+  .site-nav a[aria-current="page"] { color: var(--primary); background: var(--primary-soft); font-weight: 600; }
+  .site-actions { display: flex; align-items: center; gap: 14px; }
+  .site-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 14px 4px 4px; border-radius: 24px; border: 1px solid var(--border);
+    color: var(--ink); font-size: 14px; font-weight: 600; text-decoration: none;
+  }
+  .site-user:hover { color: var(--ink); background: var(--divider); }
+  .site-user .avatar { width: 34px; height: 34px; }
+
+  /* ---------- Contenidor de pàgina ---------- */
+  .app {
+    max-width: none; min-height: calc(100vh - 69px);
+    padding: 0 40px; background: transparent;
+  }
+  .screen { padding: 36px 0 56px; gap: 24px; }
+  .title-lg { font-size: 36px; }
+  .page-sub { font-size: 16px; }
+  .topbar { align-items: flex-end; }
+
+  /* Dues columnes: contingut + panell lateral */
+  .layout {
+    display: grid; grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 28px; align-items: start;
+  }
+  .layout-main, .layout-aside { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .layout-aside { position: sticky; top: 92px; }
+  .panel, .panel-plain {
+    padding: 20px; border-radius: var(--radius-lg);
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .panel .section-title { margin: 0; }
+  .panel .attending-card { background: var(--primary-soft); }
+
+  /* ---------- Llistes en graella ---------- */
+  .list {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 16px;
+  }
+  .list.list-plain { display: flex; flex-direction: column; gap: 10px; }
+  .list > .empty, .list > .error, .list > .attending-card { grid-column: 1 / -1; }
+  #recommendations { grid-template-columns: repeat(auto-fill, minmax(470px, 1fr)); gap: 18px; }
+  .tabs { max-width: 380px; }
+
+  .event-card, .attending-card, .agenda-item {
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  a.event-card:hover, .attending-card:hover, .agenda-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+  /* Targetes més grans a l'ordinador */
+  .event-card { padding: 18px; gap: 16px; }
+  .event-title { font-size: 18px; }
+  .event-meta { font-size: 14px; }
+  .event-tags { font-size: 13px; }
+  .event-card .chip { font-size: 13px; padding: 5px 10px; }
+  .date-badge { width: 66px; height: 76px; }
+  .date-badge .num { font-size: 26px; }
+  .person-card { padding: 22px; gap: 16px; }
+  .person-card > .avatar { width: 48px; height: 48px; font-size: 15px; }
+  .person-card .event-title { font-size: 19px; }
+  .slot-list { font-size: 14px; gap: 3px; }
+  .slot-label { font-size: 13px; }
+
+  /* ---------- Inici de sessió: pantalla partida ---------- */
+  .screen.login {
+    display: grid; grid-template-columns: 1.15fr 1fr; align-items: center;
+    gap: 72px; min-height: 100vh; padding: 48px 0 !important;
+  }
+  .login-intro { display: flex; flex-direction: column; gap: 28px; }
+  .login-intro .title-xl { font-size: 52px; letter-spacing: -1px; }
+  .login-art { height: 300px !important; }
+  .login-art svg { height: 100%; }
+  .login-form {
+    width: 100%; max-width: 440px; justify-self: center;
+    padding: 40px; border-radius: 24px;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .login-form .input { background: var(--bg); }
+  .login-form-title { display: block; margin-bottom: 6px; }
+
+  /* ---------- Detall de quedada ---------- */
+  .hero {
+    flex-direction: row; align-items: flex-start; gap: 28px;
+    margin-top: 32px; padding: 40px 48px;
+    border-radius: 24px; border: 1px solid var(--border);
+  }
+  .hero-title { font-size: 46px !important; letter-spacing: -1px; }
+  .hero-sub { font-size: 16px; }
+  .screen.detail {
+    display: grid; grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 32px; align-items: start; padding: 32px 0 56px !important;
+  }
+  .screen.detail #error { grid-column: 1 / -1; }
+  .detail-main {
+    display: flex; flex-direction: column; gap: 18px; min-width: 0;
+    padding: 28px; border-radius: var(--radius-lg);
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .detail-main .person-pill { background: var(--bg); }
+  .detail-main .description { font-size: 16px; line-height: 1.6; }
+  .detail-aside {
+    display: flex; flex-direction: column; gap: 14px;
+    position: sticky; top: 92px;
+  }
+
+  /* ---------- Crear quedada ---------- */
+  .form-card {
+    width: 100%; max-width: 760px; margin: 36px auto 56px;
+    padding: 36px 40px !important; gap: 20px;
+    border-radius: 24px; background: var(--surface); border: 1px solid var(--border);
+  }
+  .form-card .input { background: var(--bg); }
+  .form-card button[type="submit"] { align-self: flex-end; width: auto; padding: 0 32px; }
+
+  /* ---------- Calendari ---------- */
+  .cal-layout { grid-template-columns: minmax(0, 1fr) 480px; }
+  .cal-layout .layout-aside { padding: 24px; gap: 14px !important; }
+  .cal-layout #day-title { font-size: 20px; }
+  .cal-layout .agenda-item { padding: 16px 18px; }
+  .cal-layout .agenda-item .info span:first-child { font-size: 16px; }
+  .cal-layout .agenda-item .info span:last-child { font-size: 14px; }
+  .cal-layout #agenda { display: flex; flex-direction: column; gap: 10px; }
+  .cal-panel { padding: 24px; gap: 16px; }
+  .cal-panel .calendar { padding: 0; border: none; background: transparent; gap: 10px; }
+  .cal-panel .cal-grid { gap: 8px; }
+  .cal-day { height: 64px; font-size: 16px; }
+  .cal-head { font-size: 13px; }
+  .cal-dot { bottom: 9px; width: 6px; height: 6px; }
+  .month-bar .month { font-size: 20px; }
+
+  /* ---------- Comunitats ---------- */
+  /* Descobreix a l'esquerra (graella) i "Les teves" en un panell fix a la dreta */
+  .community-search { max-width: 560px; }
+  .community-search .input { height: 48px; font-size: 15px; }
+  .community-sections {
+    display: grid; grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 28px; align-items: start;
+  }
+  .community-sections > .community-section { gap: 14px; min-width: 0; }
+  .community-discover { grid-column: 1; grid-row: 1; }
+  .community-mine {
+    grid-column: 2; grid-row: 1;
+    position: sticky; top: 92px;
+    padding: 20px; border-radius: var(--radius-lg);
+    background: var(--surface); border: 1px solid var(--border);
+  }
+
+  /* Les teves: llista compacta dins del panell */
+  .community-mine .community-grid { grid-template-columns: 1fr; gap: 10px; }
+  .community-mine .community-card { background: var(--bg); }
+  .community-mine .community-grid .community-card-content {
+    flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px;
+  }
+  .community-mine .community-avatar { width: 44px; height: 44px; }
+
+  /* Descobreix: targetes verticals en graella */
+  .community-discover .community-list.list {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;
+  }
+  .community-discover .community-card {
+    flex-direction: column; align-items: stretch; gap: 18px; padding: 22px;
+  }
+  .community-discover .community-card-content {
+    flex-direction: column; align-items: flex-start; gap: 14px;
+  }
+  .community-discover .community-avatar { width: 60px; height: 60px; font-size: 18px; border-radius: 16px; }
+  .community-discover .community-name { font-size: 19px; }
+  .community-discover .community-meta { font-size: 14px; }
+  .community-discover .community-join { width: 100%; height: 44px; margin-top: auto; }
+
+  .community-card { transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+  .community-card:hover {
+    border-color: var(--primary); transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+  .community-name { font-size: 16px; }
+  .community-meta { font-size: 13px; }
+
+  /* Fitxa de detall */
+  .community-detail { width: min(calc(100% - 4rem), 560px); padding: 28px; }
+
+  /* ---------- Perfil ---------- */
+  .profile-layout { grid-template-columns: minmax(0, 1fr) 380px; }
+  .profile-card { padding: 28px; gap: 20px; }
+  .profile-avatar { width: 88px; height: 88px; font-size: 30px; }
+  .profile-name { font-size: 30px; }
+  .stat { padding: 20px 8px; font-size: 13px; }
+  .stat .num { font-size: 30px; }
+
+  .toast { bottom: 32px; }
+}
