@@ -5,6 +5,7 @@ const filters = document.getElementById('activity-filters');
 const list = document.getElementById('recommendations');
 const retry = document.getElementById('retry');
 const weekdays = [...DOW_SHORT.slice(1), DOW_SHORT[0]];
+const connectionStates = new Map();
 let selectedActivity = '';
 let latestRequest = 0;
 
@@ -61,11 +62,32 @@ function personCard(person) {
         <div class="event-meta">${esc(person.zone)}${person.nearby_zone ? ' · Zona propera' : ''}</div>
         <div class="event-tags">
           ${activities}
-          ${person.connected ? '<span>Ja hi tens connexió</span>' : ''}
         </div>
         ${slotsBlock(sharedSlots)}
+        ${person.id ? `
+          <div class="event-tags" data-connection-id="${esc(person.id)}" data-name="${esc(person.name)}">
+            ${connectionAction(person.id, person.name, person.connected)}
+          </div>` : ''}
       </div>
     </article>`;
+}
+
+function connectionAction(id, name, connected = false) {
+  const state = connectionStates.get(id);
+  if (connected || state === 'connected') return '<span class="chip">Connectats</span>';
+  const busy = state === 'pending';
+  return `<button class="btn btn-small btn-secondary" type="button" data-connect
+    aria-label="${busy ? 'Connectant amb' : 'Connectar amb'} ${esc(name)}"${busy ? ' disabled' : ''}>
+    ${busy ? 'Connectant…' : 'Connectar'}
+  </button>`;
+}
+
+function updateConnectionActions(id) {
+  for (const action of list.querySelectorAll('[data-connection-id]')) {
+    if (action.dataset.connectionId === id) {
+      action.innerHTML = connectionAction(id, action.dataset.name);
+    }
+  }
 }
 
 function updateFilterSelection() {
@@ -119,6 +141,24 @@ filters.addEventListener('click', event => {
   selectedActivity = button.dataset.activity;
   updateFilterSelection();
   loadRecommendations();
+});
+list.addEventListener('click', async event => {
+  const button = event.target.closest('button[data-connect]');
+  if (!button) return;
+  const { connectionId: id } = button.closest('[data-connection-id]').dataset;
+  if (connectionStates.has(id)) return;
+
+  connectionStates.set(id, 'pending');
+  updateConnectionActions(id);
+  try {
+    await api(`/persons/${encodeURIComponent(user.id)}/connections/${encodeURIComponent(id)}`, { method: 'POST' });
+    connectionStates.set(id, 'connected');
+  } catch (err) {
+    connectionStates.delete(id);
+    toast(err.message);
+  } finally {
+    updateConnectionActions(id);
+  }
 });
 retry.addEventListener('click', loadRecommendations);
 loadRecommendations();
