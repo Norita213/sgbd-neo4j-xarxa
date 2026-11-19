@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 
-from backend.db import run_query
+from db import run_query
 
 from ..queries import EVENT_TAIL
 from ..schemas import CommunityIn
