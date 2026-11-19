@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="app">
-  <main class="screen" style="padding: 40px 28px; gap: 28px; justify-content: center">
+  <main class="screen" style="padding: 36px 28px; gap: 24px; justify-content: center">
     <div class="brand">
       <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
         <line x1="9" y1="10" x2="25" y2="12" stroke="var(--primary)" stroke-width="2"></line>
@@ -24,8 +24,8 @@
       <span class="brand-name">AFINIT</span>
     </div>
 
-    <div style="height: 170px; border-radius: 24px; background: var(--surface); border: 1px solid var(--border); overflow: hidden">
-      <svg width="100%" height="170" viewBox="0 0 334 170" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <div style="height: 155px; border-radius: 24px; background: var(--surface); border: 1px solid var(--border); overflow: hidden">
+      <svg width="100%" height="155" viewBox="0 0 334 170" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
         <g stroke="var(--border-input)" stroke-width="1.5">
           <line x1="60" y1="50" x2="150" y2="85"></line><line x1="150" y1="85" x2="250" y2="45"></line>
           <line x1="150" y1="85" x2="200" y2="135"></line><line x1="60" y1="50" x2="85" y2="130"></line>
@@ -44,19 +44,23 @@
       </svg>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 8px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
       <h1 class="title title-xl">Troba gent amb qui fer el que t’agrada.</h1>
-      <p style="margin: 0; font-size: 16px; line-height: 1.45" class="muted">Persones, quedades i comunitats a prop teu, amb els mateixos gustos i horaris.</p>
+      <p style="margin: 0; font-size: 15px; line-height: 1.45" class="muted">Persones, quedades i comunitats a prop teu, amb els mateixos gustos i horaris.</p>
     </div>
 
     <form id="login" style="display: flex; flex-direction: column; gap: 14px" novalidate>
       <div class="field">
-        <label for="email" style="font-size: 14px">Correu electrònic</label>
-        <input id="email" class="input" type="email" autocomplete="email" placeholder="paula@example.com" required style="height: 48px; font-size: 16px">
+        <label for="identifier" style="font-size: 14px">Nom d’usuari o correu electrònic</label>
+        <input id="identifier" class="input" type="text" autocomplete="username" placeholder="paula o paula@example.com" required style="height: 46px; font-size: 16px">
+      </div>
+      <div class="field">
+        <label for="password" style="font-size: 14px">Contrasenya</label>
+        <input id="password" class="input" type="password" autocomplete="current-password" placeholder="••••" required style="height: 46px; font-size: 16px">
       </div>
       <div id="error" class="error hidden" role="alert"></div>
       <button class="btn btn-primary btn-block" type="submit">Entrar</button>
-      <p style="margin: 0; text-align: center; font-size: 15px" class="muted">Encara no tens compte? <a href="registre.html?s=Registre" style="font-weight: 600">Registra’t</a></p>
+      <p style="margin: 0; text-align: center; font-size: 15px" class="muted">Encara no tens compte? <a href="registre.html" style="font-weight: 600">Registra’t</a></p>
     </form>
   </main>
 </div>
@@ -70,17 +74,18 @@
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('email').value.trim();
+    const identifier = document.getElementById('identifier').value.trim();
+    const password = document.getElementById('password').value;
     const button = form.querySelector('button');
     errorBox.classList.add('hidden');
-    if (!email) {
-      errorBox.textContent = 'Escriu el teu correu electrònic.';
+    if (!identifier || !password) {
+      errorBox.textContent = 'Escriu el teu nom d’usuari o correu i la contrasenya.';
       errorBox.classList.remove('hidden');
       return;
     }
     button.disabled = true;
     try {
-      const user = await api('/auth/login', { method: 'POST', body: { email } });
+      const user = await api('/auth/login', { method: 'POST', body: { identifier, password } });
       setUser(user);
       location.href = 'quedades.html';
     } catch (err) {

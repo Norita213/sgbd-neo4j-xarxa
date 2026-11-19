@@ -83,15 +83,31 @@
     <div id="error" class="error hidden" role="alert"></div>
 
     <!-- PAS 1: Dades personals i interessos -->
-    <form id="step-1" style="display: flex; flex-direction: column; gap: 16px; flex: 1" novalidate>
-      <div class="field">
-        <label for="name">Nom</label>
-        <input id="name" class="input" type="text" maxlength="60" placeholder="Laia Puig" required>
+    <form id="step-1" style="display: flex; flex-direction: column; gap: 14px; flex: 1" novalidate>
+      <div class="row-2">
+        <div class="field">
+          <label for="name">Nom</label>
+          <input id="name" class="input" type="text" maxlength="50" placeholder="Laia" required>
+        </div>
+        <div class="field">
+          <label for="surname">Cognoms</label>
+          <input id="surname" class="input" type="text" maxlength="80" placeholder="Puig Soler" required>
+        </div>
       </div>
 
-      <div class="field">
-        <label for="email">Correu electrònic</label>
-        <input id="email" class="input" type="email" autocomplete="email" placeholder="laia@example.com" required>
+      <div class="row-2">
+        <div class="field">
+          <label for="username">Nom d’usuari</label>
+          <input id="username" class="input" type="text" autocomplete="username" maxlength="30" placeholder="laiapuig" required>
+        </div>
+        <div class="field">
+          <label for="email">Correu electrònic</label>
+          <input id="email" class="input" type="email" autocomplete="email" placeholder="laia@example.com" required>
+        </div>
+        <div class="field">
+          <label for="password">Contrasenya</label>
+          <input id="password" class="input" type="password" autocomplete="new-password" minlength="4" placeholder="Mínim 4 caràcters" required>
+        </div>
       </div>
 
       <div class="row-2-1">
@@ -161,7 +177,7 @@
   const $ = (id) => document.getElementById(id);
   const DAYS_ORDER = ['Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds', 'Dg'];
   const selectedActivities = new Set();
-  const availableHours = new Set(); // format "Dl-18"
+  const availableHours = new Set();
   let currentStep = 1;
 
   $('back').innerHTML = icon('back');
@@ -189,7 +205,6 @@
     else location.href = 'index.html';
   });
 
-  // Inicialitza selectors d'hores (8h..21h -> 9h..22h)
   function initHourSelects() {
     const fromOpts = [];
     for (let h = 8; h <= 21; h++) {
@@ -211,7 +226,6 @@
   }
   $('slot-from').addEventListener('change', syncToHours);
 
-  // Converteix el Set("Dl-18") en rangs contigus [{day, from_hour, to_hour}]
   function getMergedRanges() {
     const ranges = [];
     for (const day of DAYS_ORDER) {
@@ -294,9 +308,14 @@
     e.preventDefault();
     clearError();
     const name = $('name').value.trim();
-    const email = $('email').value.trim();
+    const surname = $('surname').value.trim();
+    const username = $('username').value.trim();
+    const password = $('password').value;
+
     if (!name) { showError('Escriu el teu nom.'); $('name').focus(); return; }
-    if (!email || !email.includes('@')) { showError('Escriu un correu electrònic vàlid.'); $('email').focus(); return; }
+    if (!surname) { showError('Escriu els teus cognoms.'); $('surname').focus(); return; }
+    if (!username || /\s/.test(username)) { showError('Escriu un nom d’usuari vàlid (sense espais).'); $('username').focus(); return; }
+    if (password.length < 4) { showError('La contrasenya ha de tenir almenys 4 caràcters.'); $('password').focus(); return; }
     if (!selectedActivities.size) { showError('Tria almenys una activitat que t’agradi.'); return; }
     setStep(2);
   });
@@ -313,7 +332,9 @@
     const ageVal = $('age').value.trim();
     const registerBody = {
       name: $('name').value.trim(),
-      email: $('email').value.trim(),
+      surname: $('surname').value.trim(),
+      username: $('username').value.trim().toLowerCase(),
+      password: $('password').value,
       zone: $('zone').value,
       age: ageVal ? parseInt(ageVal, 10) : null,
       activities: Array.from(selectedActivities),
@@ -327,7 +348,12 @@
         method: 'PUT',
         body: { slots, mode: 'available' },
       });
-      setUser({ id: created.id, name: created.name });
+      setUser({
+        id: created.id,
+        name: created.name,
+        surname: created.surname,
+        username: created.username,
+      });
       location.href = 'quedades.html';
     } catch (err) {
       showError(err.message);

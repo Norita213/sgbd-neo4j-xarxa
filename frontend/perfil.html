@@ -24,9 +24,10 @@
 
     <section class="profile-card">
       <div class="avatar profile-avatar" id="avatar"></div>
-      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
-        <span class="profile-name" id="name">Carregant…</span>
-        <span class="muted" id="meta"></span>
+      <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+        <span class="profile-name" id="username">Carregant…</span>
+        <span style="font-size: 15px; font-weight: 500; color: var(--text)" id="name"></span>
+        <span class="muted" style="font-size: 14px" id="meta"></span>
       </div>
     </section>
 
@@ -95,9 +96,11 @@
   (async () => {
     try {
       const p = await api(`/persons/${encodeURIComponent(user.id)}`);
+      const fullName = [p.name, p.surname].filter(Boolean).join(' ');
       $('avatar').textContent = initials(p.name);
       $('avatar').classList.add(avatarClass(p.name));
-      $('name').textContent = p.name;
+      $('name').textContent = fullName;
+      $('username').textContent = p.username ? `@${p.username}` : '';
       $('meta').textContent = [p.age ? `${p.age} anys` : null, p.zone].filter(Boolean).join(' · ');
       $('connections').textContent = p.connections;
       $('events').textContent = p.events;

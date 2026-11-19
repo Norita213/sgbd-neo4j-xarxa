@@ -66,7 +66,7 @@
 </head>
 <body>
 <div class="app">
-  <form class="screen" id="form" style="padding: 20px 24px 32px" novalidate>
+  <form class="screen" id="form" style="padding: 20px 24px 32px; gap: 14px" novalidate>
     <div class="topbar-left">
       <a class="icon-btn" href="perfil.html" aria-label="Tornar al perfil" id="back"></a>
       <h1 class="title title-md">Editar perfil</h1>
@@ -74,9 +74,30 @@
 
     <div id="error" class="error hidden" role="alert"></div>
 
-    <div class="field">
-      <label for="name">Nom</label>
-      <input id="name" class="input" type="text" maxlength="60" required>
+    <div class="row-2">
+      <div class="field">
+        <label for="name">Nom</label>
+        <input id="name" class="input" type="text" maxlength="50" required>
+      </div>
+      <div class="field">
+        <label for="surname">Cognoms</label>
+        <input id="surname" class="input" type="text" maxlength="80" required>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="username">Nom d’usuari</label>
+        <input id="username" class="input" type="text" autocomplete="username" maxlength="30" required>
+      </div>
+      <div class="field">
+        <label for="email">Correu electrònic</label>
+        <input id="email" class="input" type="email" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="password">Nova contrasenya</label>
+        <input id="password" class="input" type="password" autocomplete="new-password" minlength="4" placeholder="Deixa-ho buit per mantenir">
+      </div>
     </div>
 
     <div class="row-2-1">
@@ -238,6 +259,9 @@
       ]);
 
       $('name').value = profile.name || '';
+      $('surname').value = profile.surname || '';
+      $('email').value = profile.email || '';
+      $('username').value = profile.username || '';
       $('age').value = profile.age ?? '';
       $('zone').innerHTML = zones.map(z => `<option value="${esc(z.name)}">${esc(z.name)}</option>`).join('');
       if (profile.zone) $('zone').value = profile.zone;
@@ -261,9 +285,21 @@
     e.preventDefault();
     $('error').classList.add('hidden');
     const name = $('name').value.trim();
+    const surname = $('surname').value.trim();
+    const username = $('username').value.trim();
+    const email = $('email').value.trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError('Escriu un correu electrònic vàlid.');
+        $('email').focus();
+        return;
+      }
+    const password = $('password').value;
     const slots = getMergedRanges();
 
     if (!name) { showError('El nom no pot quedar buit.'); $('name').focus(); return; }
+    if (!surname) { showError('Els cognoms no poden quedar buits.'); $('surname').focus(); return; }
+    if (!username || /\s/.test(username)) { showError('El nom d’usuari no és vàlid (no pot tenir espais).'); $('username').focus(); return; }
+    if (password && password.length < 4) { showError('La nova contrasenya ha de tenir almenys 4 caràcters.'); $('password').focus(); return; }
     if (!selectedActivities.size) { showError('Tria almenys una activitat.'); return; }
     if (!slots.length) { showError('Afegeix almenys una franja disponible.'); return; }
 
@@ -276,6 +312,9 @@
         method: 'PUT',
         body: {
           name,
+          surname,
+          username: username.toLowerCase(),
+          password: password || null,
           age: ageVal ? parseInt(ageVal, 10) : null,
           zone: $('zone').value,
           activities: Array.from(selectedActivities),
@@ -285,7 +324,12 @@
         method: 'PUT',
         body: { slots, mode: 'available' },
       });
-      setUser({ ...user, name: updated.name });
+      setUser({
+        ...user,
+        name: updated.name,
+        surname: updated.surname,
+        username: updated.username,
+      });
       location.href = 'perfil.html';
     } catch (err) {
       showError(err.message);
