@@ -14,6 +14,8 @@
   <main class="screen" style="gap: 14px">
     <h1 class="title title-lg" style="min-height: 44px; display: flex; align-items: center">Calendari</h1>
 
+    <div class="layout cal-layout">
+    <div class="layout-main panel cal-panel">
     <div class="month-bar">
       <button class="icon-btn" type="button" id="prev" aria-label="Mes anterior"></button>
       <span class="month" id="month" aria-live="polite"></span>
@@ -29,12 +31,14 @@
       <span><i style="background: var(--primary)"></i>Quedades on vas</span>
       <span><i style="background: var(--muted)"></i>Ja passades</span>
     </div>
+    </div>
 
-    <section style="display: flex; flex-direction: column; gap: 10px">
+    <section class="layout-aside panel" style="display: flex; flex-direction: column; gap: 10px">
       <h2 class="section-title" style="margin: 0" id="day-title"></h2>
       <div class="list" id="agenda"></div>
       <div class="blocks" id="blocks"></div>
     </section>
+    </div>
     <div id="error" class="error hidden" role="alert"></div>
   </main>
 </div>
