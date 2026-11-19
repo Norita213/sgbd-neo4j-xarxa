@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from backend.db import run_query
+from db import run_query
 
 from ..schemas import DAYS, AvailabilityIn, PersonUpdate
 
