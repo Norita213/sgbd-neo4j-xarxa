@@ -5,20 +5,20 @@ const filters = document.getElementById('activity-filters');
 const list = document.getElementById('recommendations');
 const retry = document.getElementById('retry');
 const weekdays = [...DOW_SHORT.slice(1), DOW_SHORT[0]];
+const weekdayList = new Intl.ListFormat('ca', { type: 'conjunction' });
 const connectionStates = new Map();
 let selectedActivity = '';
 let latestRequest = 0;
 
-// Franges en comú, compactes: les hores seguides s'ajunten ("18–22 h") i els
-// dies amb les mateixes hores van junts -> "Ds, Dg · 08–22 h"
+// Agrupem les hores consecutives i els dies que comparteixen les mateixes franges.
 function formatSharedSlots(slots) {
   const hoursByDay = new Map();
   for (const { day, hour } of slots) {
     if (!hoursByDay.has(day)) hoursByDay.set(day, []);
     hoursByDay.get(day).push(hour);
   }
-  const pad = hour => String(hour).padStart(2, '0');
-  const daysByRanges = new Map();
+  const formatHour = hour => String(hour).padStart(2, '0') + ':00';
+  const groups = new Map();
   for (const day of weekdays) {
     const hours = [...new Set(hoursByDay.get(day) || [])].sort((a, b) => a - b);
     if (!hours.length) continue;
@@ -27,26 +27,32 @@ function formatSharedSlots(slots) {
       const start = hours[i];
       let end = start + 1;
       while (i + 1 < hours.length && hours[i + 1] === end) { end++; i++; }
-      ranges.push(`${pad(start)}–${pad(end)} h`);
+      ranges.push(`${formatHour(start)}–${formatHour(end)}`);
     }
     const key = ranges.join(', ');
-    if (!daysByRanges.has(key)) daysByRanges.set(key, []);
-    daysByRanges.get(key).push(day);
+    if (!groups.has(key)) groups.set(key, { days: [], ranges });
+    groups.get(key).days.push(DOW_LONG[DOW_SHORT.indexOf(day)].toLocaleLowerCase('ca'));
   }
-  return [...daysByRanges].map(([ranges, days]) => `${days.join(', ')} · ${ranges}`);
+  return [...groups.values()];
 }
 
-const MAX_SLOT_LINES = 3;
-
-function slotsBlock(lines) {
-  if (!lines.length) return '';
-  const shown = lines.slice(0, MAX_SLOT_LINES);
-  const extra = lines.length - shown.length;
+function slotsBlock(groups) {
+  if (!groups.length) return '';
   return `
     <div class="slot-list">
       <span class="slot-label">${icon('clock', 14)}Hores lliures en comú</span>
-      ${shown.map(line => `<span>${esc(line)}</span>`).join('')}
-      ${extra > 0 ? `<span class="muted">+${extra} ${extra === 1 ? 'franja més' : 'franges més'}</span>` : ''}
+      <ul class="slot-groups" role="list">
+        ${groups.map(({ days, ranges }) => {
+          const label = weekdayList.format(days);
+          return `
+            <li class="slot-group">
+              <span class="slot-days">${esc(label[0].toLocaleUpperCase('ca') + label.slice(1))}</span>
+              <div class="slot-hours">
+                ${ranges.map(range => `<span class="slot-hour">${esc(range)}</span>`).join('')}
+              </div>
+            </li>`;
+        }).join('')}
+      </ul>
     </div>`;
 }
 
