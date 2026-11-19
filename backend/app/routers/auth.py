@@ -16,14 +16,19 @@ def register(body: RegisterIn):
     PUT /persons/{id}/availability amb els horaris (pas 2)."""
     if run_query("MATCH (p:Person {email:$email}) RETURN p.id AS id", email=body.email.strip().lower()):
         raise HTTPException(409, "Ja existeix un compte amb aquest correu")
-    person = run_query(
+    rows = run_query(
         """MERGE (z:Zone {name: $zone})
            CREATE (p:Person {id: $id, name: $name, age: $age, email: $email})-[:LIVES_IN]->(z)
            RETURN p.id AS id, p.name AS name, p.age AS age, p.email AS email, z.name AS zone""",
         id=str(uuid.uuid4()), name=body.name, age=body.age, email=body.email.strip().lower(), zone=body.zone,
-    )[0]
+    )
+    if not rows:
+        raise HTTPException(500, "La zona indicada no existeix")
+
+    person = rows[0]
     if body.activities:
         set_activities_for(person["id"], body.activities)
+    person["activities"] = body.activities
     return person
 
 
@@ -32,7 +37,10 @@ def register(body: RegisterIn):
 def login(body: LoginIn):
     """Login simulat: només comprova que el correu existeix i retorna l'id."""
     rows = run_query(
-        "MATCH (p:Person {email:$email}) RETURN p.id AS id, p.name AS name", email=body.email.strip().lower()
+        """MATCH (p:Person {email:$email})
+           OPTIONAL MATCH (p)-[:LIVES_IN]->(z:Zone)
+           RETURN p.id AS id, p.name AS name, p.age AS age, p.email AS email, z.name AS zone""",
+        email=body.email.strip().lower(),
     )
     if not rows:
         raise HTTPException(404, "No hi ha cap compte amb aquest correu")

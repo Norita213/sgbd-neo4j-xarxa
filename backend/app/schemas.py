@@ -1,7 +1,7 @@
 import datetime as dt
 from typing import Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Mateixos codis de dia que al graf
 Day = Literal["Dl", "Dm", "Dc", "Dj", "Dv", "Ds", "Dg"]
@@ -24,10 +24,26 @@ class NearIn(BaseModel):
 # ---------- Autenticació simulada (TODO) ----------
 class RegisterIn(BaseModel):
     name: str
-    age: int | None = Field(default=None, ge=0)
+    age: int | None = Field(default=None, ge=0, le=120)
     zone: str
     email: str
     activities: list[str] = []
+
+    @field_validator("name")
+    @classmethod
+    def valid_name(cls, v:str) -> str:
+        clean = v.strip()
+        if not clean:
+            raise ValueError("El nom no pot estar buit")
+        return clean
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, v:str) -> str:
+        clean = v.strip().lower()
+        if "@" not in clean or "." not in clean:
+            raise ValueError("Correu electrònic no vàlid")
+        return clean
 
 
 class LoginIn(BaseModel):
@@ -37,9 +53,30 @@ class LoginIn(BaseModel):
 # ---------- Persones ----------
 class PersonUpdate(BaseModel):
     name: str | None = None
-    age: int | None = Field(default=None, ge=0)
+    age: int | None = Field(default=None, ge=0, le=120)
     zone: str | None = None
+    email: str | None = None
     activities: list[str] | None = None
+
+    @field_validator("name")
+    @classmethod
+    def valid_name(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        clean = v.strip()
+        if not clean:
+            raise ValueError("El nom no pot quedar buit")
+        return clean
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        clean = v.strip().lower()
+        if "@" not in clean or "." not in clean.split("@")[-1]:
+            raise ValueError("Escriu un correu electrònic vàlid")
+        return clean
 
 
 class SlotRange(BaseModel):

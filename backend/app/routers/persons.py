@@ -60,10 +60,14 @@ def get_profile(person_id: str):
         raise HTTPException(404, "Persona no trobada")
     profile = rows[0]
     profile["communities_count"] = len(profile["communities"])
-    profile["available_slots"] = run_query(
+    raw_slots = run_query(
         """MATCH (:Person {id:$id})-[:AVAILABLE_AT]->(s:Slot)
-           RETURN s.day AS day, s.hour AS hour ORDER BY day, hour""",
-        id=person_id,
+           RETURN s.day AS day, s.hour AS hour""",
+        id = person_id,
+    )
+    profile["available_slots"] = sorted(
+        raw_slots,
+        key = lambda x: (DAYS.index(x["day"]) if x["day"] in DAYS else 99, x["hour"]),
     )
     return profile
 
@@ -72,21 +76,35 @@ def get_profile(person_id: str):
 def update_profile(person_id: str, body: PersonUpdate):
     """'Editar perfil': nom, edat, zona i activitats (tot opcional)."""
     require_person(person_id)
+
+    if body.email is not None:
+        clash = run_query(
+            "MATCH (p:Person {email:$email}) WHERE p.id <> $id RETURN p.id AS id",
+            email = body.email, id = person_id,
+        )
+        if clash:
+            raise HTTPException(409, "Ja existeix un compte amb aquest correu")
+
+    if body.zone is not None:
+        if not run_query(
+            "MATCH (z:Zone {name:$zone}) RETURN z.name AS name", zone = body.zone):
+                raise HTTPException(400, "La zona indicada no existeix")
+        run_query(
+            """MATCH (p:person {id:$id}), (z:Zone {name:$name})
+                OPTIONAL MATCH (p)-[r:LIVES_IN]->()
+                DELETE r
+                MERGE (p)-[:LIVES_IN]->(z)""",
+            id = person_id, name = body.zone,
+        )   
+
     run_query(
         """MATCH (p:Person {id:$id})
-           SET p.name = coalesce($name, p.name), p.age = coalesce($age, p.age)""",
-        id=person_id, name=body.name, age=body.age,
+           SET p.name  = coalesce($name, p.name),
+               p.age   = coalesce($age, p.age),
+               p.email = coalesce($email, p.email)""",
+        id=person_id, name=body.name, age=body.age, email=body.email,
     )
-    if body.zone is not None:
-        run_query(
-            """MATCH (p:Person {id:$id})
-               OPTIONAL MATCH (p)-[r:LIVES_IN]->()
-               DELETE r
-               WITH DISTINCT p
-               MERGE (z:Zone {name:$zone})
-               MERGE (p)-[:LIVES_IN]->(z)""",
-            id=person_id, zone=body.zone,
-        )
+
     if body.activities is not None:
         set_activities_for(person_id, body.activities)
     return get_profile(person_id)
