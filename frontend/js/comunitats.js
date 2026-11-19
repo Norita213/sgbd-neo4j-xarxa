@@ -8,14 +8,9 @@ const status = document.getElementById('community-status');
 const sections = document.getElementById('community-sections');
 const yourCommunities = document.getElementById('your-communities');
 const discoverCommunities = document.getElementById('discover-communities');
-const detail = document.getElementById('community-detail');
-const detailTitle = document.getElementById('community-detail-title');
-const detailSummary = document.getElementById('community-detail-summary');
-const detailMembers = document.getElementById('community-detail-members');
 
 let communities = [];
 let weeklyEvents = null;
-let latestDetailRequest = 0;
 const communitiesById = new Map();
 const friendsByCommunity = new Map();
 const nearbyZones = new Set();
@@ -61,7 +56,7 @@ function communityCard(community) {
       <span class="community-meta" data-community-summary="${id}">${esc(summary(community))}</span>
     </span>`;
   const cardBody = community.id
-    ? `<button class="community-card-content" type="button" data-open-community="${id}">${content}</button>`
+    ? `<a class="community-card-content" href="detall-comunitats.html?id=${encodeURIComponent(community.id)}" data-open-community="${id}">${content}</a>`
     : `<div class="community-card-content">${content}</div>`;
 
   let joinButton = '';
@@ -185,42 +180,12 @@ async function joinCommunity(community, button) {
   }
 }
 
-async function showDetail(community) {
-  const request = ++latestDetailRequest;
-  detailTitle.textContent = community.name;
-  detailSummary.textContent = [community.activity, community.zone, countLabel(community.members, 'membre', 'membres')]
-    .filter(Boolean).join(' · ');
-  detailMembers.className = 'empty';
-  detailMembers.textContent = 'S’estan carregant els membres…';
-  detail.showModal();
-
-  try {
-    const members = await api(`${communityPath(community.id)}/members`);
-    if (!detail.open || request !== latestDetailRequest) return;
-    if (!members.length) {
-      detailMembers.textContent = 'Aquesta comunitat encara no té membres.';
-      return;
-    }
-    detailMembers.className = '';
-    detailMembers.innerHTML = `
-      <ul class="info-box community-list" role="list">
-        ${members.map(member => `<li class="info-row">${esc(member.name)}</li>`).join('')}
-      </ul>`;
-  } catch (err) {
-    if (!detail.open || request !== latestDetailRequest) return;
-    detailMembers.className = 'error';
-    detailMembers.textContent = err.message;
-  }
-}
-
 search.addEventListener('input', renderCommunities);
 sections.addEventListener('click', event => {
-  const button = event.target.closest('button[data-open-community], button[data-join-community]');
+  const button = event.target.closest('button[data-join-community]');
   if (!button) return;
-  const community = communitiesById.get(button.dataset.openCommunity ?? button.dataset.joinCommunity);
-  if (!community) return;
-  if (button.dataset.openCommunity) showDetail(community);
-  else joinCommunity(community, button);
+  const community = communitiesById.get(button.dataset.joinCommunity);
+  if (community) joinCommunity(community, button);
 });
 
 async function loadCommunities() {
