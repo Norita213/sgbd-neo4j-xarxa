@@ -14,7 +14,10 @@
   <main class="screen">
     <div class="topbar">
       <h1 class="title title-lg">Perfil</h1>
-      <button class="icon-btn" type="button" id="theme"></button>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <a class="btn btn-secondary btn-small" href="editar-perfil.html">Editar</a>
+        <button class="icon-btn" type="button" id="theme"></button>
+      </div>
     </div>
 
     <div id="error" class="error hidden" role="alert"></div>
@@ -23,9 +26,10 @@
     <div class="layout-main">
     <section class="profile-card">
       <div class="avatar profile-avatar" id="avatar"></div>
-      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
-        <span class="profile-name" id="name">Carregant…</span>
-        <span class="muted" id="meta"></span>
+      <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+        <span class="profile-name" id="username">Carregant…</span>
+        <span style="font-size: 15px; font-weight: 500; color: var(--text)" id="name"></span>
+        <span class="muted" style="font-size: 14px" id="meta"></span>
       </div>
     </section>
 
@@ -43,6 +47,11 @@
       <div class="event-tags" id="activities"></div>
     </section>
 
+    <section style="display: flex; flex-direction: column; gap: 10px">
+      <h2 class="section-title" style="margin: 0">Disponibilitat</h2>
+      <div class="event-tags" id="availability"></div>
+    </section>
+
     <button class="btn btn-secondary btn-block" type="button" id="logout" style="margin-top: auto"></button>
     </div>
     </div>
@@ -54,8 +63,8 @@
   const user = requireUser();
   renderNav('perfil');
   const $ = (id) => document.getElementById(id);
+  const DAYS_ORDER = ['Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds', 'Dg'];
 
-  // Botó lluna / sol: canvia entre mode fosc i mode clar
   function paintThemeButton() {
     const dark = getTheme() === 'dark';
     $('theme').innerHTML = icon(dark ? 'sun' : 'moon', 20);
@@ -71,19 +80,47 @@
   $('logout').innerHTML = `${icon('logout', 20)}Tancar la sessió`;
   $('logout').addEventListener('click', logout);
 
+  function formatAvailableSlots(slots) {
+    if (!slots || !slots.length) return [];
+    const byDay = {};
+    for (const s of slots) (byDay[s.day] ||= []).push(s.hour);
+    const pills = [];
+    for (const day of DAYS_ORDER) {
+      const hours = (byDay[day] || []).sort((a, b) => a - b);
+      for (let i = 0; i < hours.length; i++) {
+        const start = hours[i];
+        let end = start + 1;
+        while (i + 1 < hours.length && hours[i + 1] === end) {
+          end++;
+          i++;
+        }
+        pills.push(`${day} · ${String(start).padStart(2, '0')}–${String(end).padStart(2, '0')}h`);
+      }
+    }
+    return pills;
+  }
+
   (async () => {
     try {
       const p = await api(`/persons/${encodeURIComponent(user.id)}`);
+      const fullName = [p.name, p.surname].filter(Boolean).join(' ');
       $('avatar').textContent = initials(p.name);
       $('avatar').classList.add(avatarClass(p.name));
-      $('name').textContent = p.name;
+      $('name').textContent = fullName;
+      $('username').textContent = p.username ? `@${p.username}` : '';
       $('meta').textContent = [p.age ? `${p.age} anys` : null, p.zone].filter(Boolean).join(' · ');
       $('connections').textContent = p.connections;
       $('events').textContent = p.events;
       $('communities').textContent = p.communities_count;
+
       $('activities').innerHTML = p.activities.length
         ? p.activities.map(a => `<span class="chip">${esc(a)}</span>`).join('')
         : '<span class="muted">Encara no has triat cap activitat.</span>';
+
+      const availPills = formatAvailableSlots(p.available_slots);
+      $('availability').innerHTML = availPills.length
+        ? availPills.map(label => `<span class="chip" style="display: inline-flex; align-items: center; gap: 5px">${icon('clock', 13)}${esc(label)}</span>`).join('')
+        : '<span class="muted">Encara no has indicat cap franja disponible.</span>';
     } catch (err) {
       $('error').textContent = err.message;
       $('error').classList.remove('hidden');

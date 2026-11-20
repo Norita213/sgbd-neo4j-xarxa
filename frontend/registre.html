@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registre · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+<script src="js/theme.js"></script>
+<style>
+  .step-badge {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .chips-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip-toggle {
+    padding: 8px 13px;
+    border-radius: 12px;
+    border: 1px solid var(--border-input);
+    background: var(--surface);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .chip-toggle[aria-pressed="true"] {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .slot-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .slot-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 11px;
+    border-radius: 10px;
+    background: var(--primary-soft);
+    color: var(--primary-soft-text);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .slot-pill button {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 2px;
+    cursor: pointer;
+  }
+  .slot-builder {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: end;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="screen" style="padding: 20px 24px 32px">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" id="back" aria-label="Tornar"></button>
+        <h1 class="title title-md" id="page-title">Crea el teu perfil</h1>
+      </div>
+      <span class="step-badge" id="step-label">Pas 1 de 2</span>
+    </div>
+
+    <div id="error" class="error hidden" role="alert"></div>
+
+    <!-- PAS 1: Dades personals i interessos -->
+    <form id="step-1" style="display: flex; flex-direction: column; gap: 14px; flex: 1" novalidate>
+      <div class="row-2">
+        <div class="field">
+          <label for="name">Nom</label>
+          <input id="name" class="input" type="text" maxlength="50" placeholder="Laia" required>
+        </div>
+        <div class="field">
+          <label for="surname">Cognoms</label>
+          <input id="surname" class="input" type="text" maxlength="80" placeholder="Puig Soler" required>
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="username">Nom d’usuari</label>
+          <input id="username" class="input" type="text" autocomplete="username" maxlength="30" placeholder="laiapuig" required>
+        </div>
+        <div class="field">
+          <label for="email">Correu electrònic</label>
+          <input id="email" class="input" type="email" autocomplete="email" placeholder="laia@example.com" required>
+        </div>
+        <div class="field">
+          <label for="password">Contrasenya</label>
+          <input id="password" class="input" type="password" autocomplete="new-password" minlength="4" placeholder="Mínim 4 caràcters" required>
+        </div>
+      </div>
+
+      <div class="row-2-1">
+        <div class="field">
+          <label for="zone">Zona</label>
+          <select id="zone" class="input" required></select>
+        </div>
+        <div class="field">
+          <label for="age">Edat</label>
+          <input id="age" class="input" type="number" min="16" max="99" placeholder="24">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Què t’agrada fer? (tria’n almenys una)</label>
+        <div class="chips-grid" id="activities"></div>
+      </div>
+
+      <button class="btn btn-primary btn-block" type="submit" style="margin-top: auto">Continuar</button>
+    </form>
+
+    <!-- PAS 2: Franges disponibles -->
+    <form id="step-2" class="hidden" style="display: flex; flex-direction: column; gap: 16px; flex: 1" novalidate>
+      <div class="hint">
+        <span id="clock-icon"></span>
+        <span>Indica en quines franges <strong>pots quedar</strong> habitualment. Només et recomanarem quedades i persones afins que hi coincideixin.</span>
+      </div>
+
+      <div class="slot-builder">
+        <div class="field">
+          <label for="slot-day">Dia</label>
+          <select id="slot-day" class="input">
+            <option value="Dl">Dl · Dilluns</option>
+            <option value="Dm">Dm · Dimarts</option>
+            <option value="Dc">Dc · Dimecres</option>
+            <option value="Dj">Dj · Dijous</option>
+            <option value="Dv">Dv · Divendres</option>
+            <option value="Ds">Ds · Dissabte</option>
+            <option value="Dg">Dg · Diumenge</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="slot-from">De</label>
+          <select id="slot-from" class="input"></select>
+        </div>
+        <div class="field">
+          <label for="slot-to">A</label>
+          <select id="slot-to" class="input"></select>
+        </div>
+        <button class="btn btn-secondary btn-small" type="button" id="add-slot" style="height: 44px">Afegir</button>
+      </div>
+
+      <div class="field">
+        <label>Franges disponibles seleccionades</label>
+        <div id="slot-list" class="slot-list"></div>
+      </div>
+
+      <button class="btn btn-primary btn-block" type="submit" id="submit-btn" style="margin-top: auto">Finalitzar registre</button>
+    </form>
+  </main>
+</div>
+
+<script src="js/afinit.js"></script>
+<script>
+  if (getUser()) location.replace('quedades.html');
+
+  const $ = (id) => document.getElementById(id);
+  const DAYS_ORDER = ['Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds', 'Dg'];
+  const selectedActivities = new Set();
+  const availableHours = new Set();
+  let currentStep = 1;
+
+  $('back').innerHTML = icon('back');
+  $('clock-icon').innerHTML = icon('clock', 20);
+
+  function showError(msg) {
+    $('error').textContent = msg;
+    $('error').classList.remove('hidden');
+  }
+  function clearError() {
+    $('error').classList.add('hidden');
+  }
+
+  function setStep(step) {
+    currentStep = step;
+    clearError();
+    $('step-1').classList.toggle('hidden', step !== 1);
+    $('step-2').classList.toggle('hidden', step !== 2);
+    $('step-label').textContent = `Pas ${step} de 2`;
+    $('page-title').textContent = step === 1 ? 'Crea el teu perfil' : 'Quan pots quedar?';
+  }
+
+  $('back').addEventListener('click', () => {
+    if (currentStep === 2) setStep(1);
+    else location.href = 'index.html';
+  });
+
+  function initHourSelects() {
+    const fromOpts = [];
+    for (let h = 8; h <= 21; h++) {
+      fromOpts.push(`<option value="${h}"${h === 18 ? ' selected' : ''}>${String(h).padStart(2, '0')}:00</option>`);
+    }
+    $('slot-from').innerHTML = fromOpts.join('');
+    syncToHours();
+  }
+
+  function syncToHours() {
+    const from = parseInt($('slot-from').value, 10);
+    const prevTo = parseInt($('slot-to').value, 10);
+    const opts = [];
+    for (let h = from + 1; h <= 22; h++) {
+      opts.push(`<option value="${h}">${String(h).padStart(2, '0')}:00</option>`);
+    }
+    $('slot-to').innerHTML = opts.join('');
+    $('slot-to').value = String(prevTo > from ? prevTo : Math.min(from + 2, 22));
+  }
+  $('slot-from').addEventListener('change', syncToHours);
+
+  function getMergedRanges() {
+    const ranges = [];
+    for (const day of DAYS_ORDER) {
+      const hours = [];
+      for (let h = 8; h <= 21; h++) {
+        if (availableHours.has(`${day}-${h}`)) hours.push(h);
+      }
+      for (let i = 0; i < hours.length; i++) {
+        const start = hours[i];
+        let end = start + 1;
+        while (i + 1 < hours.length && hours[i + 1] === end) {
+          end++;
+          i++;
+        }
+        ranges.push({ day, from_hour: start, to_hour: end });
+      }
+    }
+    return ranges;
+  }
+
+  function renderSlots() {
+    const ranges = getMergedRanges();
+    if (!ranges.length) {
+      $('slot-list').innerHTML = '<div class="empty" style="width: 100%">Encara no has afegit cap franja disponible.</div>';
+      return;
+    }
+    $('slot-list').innerHTML = ranges.map(r => `
+      <span class="slot-pill">
+        <span>${r.day} · ${String(r.from_hour).padStart(2, '0')}:00 – ${String(r.to_hour).padStart(2, '0')}:00h</span>
+        <button type="button" data-day="${r.day}" data-from="${r.from_hour}" data-to="${r.to_hour}" aria-label="Eliminar franja">×</button>
+      </span>
+    `).join('');
+  }
+
+  $('add-slot').addEventListener('click', () => {
+    clearError();
+    const day = $('slot-day').value;
+    const from = parseInt($('slot-from').value, 10);
+    const to = parseInt($('slot-to').value, 10);
+    for (let h = from; h < to; h++) availableHours.add(`${day}-${h}`);
+    renderSlots();
+  });
+
+  $('slot-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-day]');
+    if (!btn) return;
+    const day = btn.dataset.day;
+    const from = parseInt(btn.dataset.from, 10);
+    const to = parseInt(btn.dataset.to, 10);
+    for (let h = from; h < to; h++) availableHours.delete(`${day}-${h}`);
+    renderSlots();
+  });
+
+  async function loadCatalogs() {
+    try {
+      const [zones, activities] = await Promise.all([api('/zones'), api('/activities')]);
+      $('zone').innerHTML = zones.map(z => `<option value="${esc(z.name)}">${esc(z.name)}</option>`).join('');
+      $('activities').innerHTML = activities.map(a =>
+        `<button type="button" class="chip-toggle" data-name="${esc(a.name)}" aria-pressed="false">${esc(a.name)}</button>`
+      ).join('');
+    } catch (err) {
+      showError(err.message);
+    }
+  }
+
+  $('activities').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip-toggle');
+    if (!chip) return;
+    const name = chip.dataset.name;
+    if (selectedActivities.has(name)) {
+      selectedActivities.delete(name);
+      chip.setAttribute('aria-pressed', 'false');
+    } else {
+      selectedActivities.add(name);
+      chip.setAttribute('aria-pressed', 'true');
+    }
+  });
+
+  $('step-1').addEventListener('submit', (e) => {
+    e.preventDefault();
+    clearError();
+    const name = $('name').value.trim();
+    const surname = $('surname').value.trim();
+    const username = $('username').value.trim();
+    const password = $('password').value;
+
+    if (!name) { showError('Escriu el teu nom.'); $('name').focus(); return; }
+    if (!surname) { showError('Escriu els teus cognoms.'); $('surname').focus(); return; }
+    if (!username || /\s/.test(username)) { showError('Escriu un nom d’usuari vàlid (sense espais).'); $('username').focus(); return; }
+    if (password.length < 4) { showError('La contrasenya ha de tenir almenys 4 caràcters.'); $('password').focus(); return; }
+    if (!selectedActivities.size) { showError('Tria almenys una activitat que t’agradi.'); return; }
+    setStep(2);
+  });
+
+  $('step-2').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+    const slots = getMergedRanges();
+    if (!slots.length) {
+      showError('Afegeix almenys una franja horària disponible perquè et puguem recomanar quedades.');
+      return;
+    }
+
+    const ageVal = $('age').value.trim();
+    const registerBody = {
+      name: $('name').value.trim(),
+      surname: $('surname').value.trim(),
+      username: $('username').value.trim().toLowerCase(),
+      password: $('password').value,
+      zone: $('zone').value,
+      age: ageVal ? parseInt(ageVal, 10) : null,
+      activities: Array.from(selectedActivities),
+    };
+
+    const btn = $('submit-btn');
+    btn.disabled = true;
+    try {
+      const created = await api('/auth/register', { method: 'POST', body: registerBody });
+      await api(`/persons/${encodeURIComponent(created.id)}/availability`, {
+        method: 'PUT',
+        body: { slots, mode: 'available' },
+      });
+      setUser({
+        id: created.id,
+        name: created.name,
+        surname: created.surname,
+        username: created.username,
+      });
+      location.href = 'quedades.html';
+    } catch (err) {
+      showError(err.message);
+      btn.disabled = false;
+    }
+  });
+
+  initHourSelects();
+  renderSlots();
+  loadCatalogs();
+</script>
+</body>
+</html>

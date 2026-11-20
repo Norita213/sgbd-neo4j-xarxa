@@ -1,7 +1,7 @@
 import datetime as dt
 from typing import Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
 # Mateixos codis de dia que al graf
 Day = Literal["Dl", "Dm", "Dc", "Dj", "Dv", "Ds", "Dg"]
@@ -21,25 +21,115 @@ class NearIn(BaseModel):
     zone_b: str
 
 
-# ---------- Autenticació simulada (TODO) ----------
+# ---------- Autenticació ----------
 class RegisterIn(BaseModel):
     name: str
-    age: int | None = Field(default=None, ge=0)
+    surname: str
+    username: str
+    password: str = Field(min_length=4)
+    age: int | None = Field(default=None, ge=0, le=120)
     zone: str
-    email: str
+    email: str | None = None
     activities: list[str] = []
+
+    @field_validator("name")
+    @classmethod
+    def valid_name(cls, v: str) -> str:
+        clean = v.strip()
+        if not clean:
+            raise ValueError("El nom no pot estar buit")
+        return clean
+
+    @field_validator("surname")
+    @classmethod
+    def valid_surname(cls, v: str) -> str:
+        clean = v.strip()
+        if not clean:
+            raise ValueError("Els cognoms no poden estar buits")
+        return clean
+
+    @field_validator("username")
+    @classmethod
+    def valid_username(cls, v: str) -> str:
+        clean = v.strip().lower()
+        if not clean or " " in clean:
+            raise ValueError("El nom d'usuari no pot estar buit ni tenir espais")
+        return clean
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, v: str | None) -> str | None:
+        if v is None or not v.strip():
+            return None
+        clean = v.strip().lower()
+        if "@" not in clean or "." not in clean.split("@")[-1]:
+            raise ValueError("Correu electrònic no vàlid")
+        return clean
 
 
 class LoginIn(BaseModel):
-    email: str
+    identifier: str = Field(validation_alias=AliasChoices("identifier", "username", "email"))
+    password: str
+
+    @field_validator("identifier")
+    @classmethod
+    def valid_identifier(cls, v: str) -> str:
+        clean = v.strip().lower()
+        if not clean:
+            raise ValueError("Cal indicar el nom d'usuari o el correu electrònic")
+        return clean
 
 
 # ---------- Persones ----------
 class PersonUpdate(BaseModel):
     name: str | None = None
-    age: int | None = Field(default=None, ge=0)
+    surname: str | None = None
+    username: str | None = None
+    password: str | None = Field(default=None, min_length=4)
+    age: int | None = Field(default=None, ge=0, le=120)
     zone: str | None = None
+    email: str | None = None
     activities: list[str] | None = None
+
+    @field_validator("name")
+    @classmethod
+    def valid_name(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        clean = v.strip()
+        if not clean:
+            raise ValueError("El nom no pot quedar buit")
+        return clean
+
+    @field_validator("surname")
+    @classmethod
+    def valid_surname(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        clean = v.strip()
+        if not clean:
+            raise ValueError("Els cognoms no poden quedar buits")
+        return clean
+
+    @field_validator("username")
+    @classmethod
+    def valid_username(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        clean = v.strip().lower()
+        if not clean or " " in clean:
+            raise ValueError("El nom d'usuari no pot estar buit ni tenir espais")
+        return clean
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, v: str | None) -> str | None:
+        if v is None or not v.strip():
+            return None
+        clean = v.strip().lower()
+        if "@" not in clean or "." not in clean.split("@")[-1]:
+            raise ValueError("Escriu un correu electrònic vàlid")
+        return clean
 
 
 class SlotRange(BaseModel):
