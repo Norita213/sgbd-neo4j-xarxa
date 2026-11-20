@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comunitat · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+<script src="js/theme.js"></script>
+<style>
+  .community-heading { display: flex; align-items: center; gap: 14px; }
+  .community-heading .avatar { width: 56px; height: 56px; font-size: 1rem; }
+  .community-heading-copy { min-width: 0; overflow-wrap: anywhere; }
+  .community-heading-copy p { margin: 4px 0 0; }
+  .community-actions { display: flex; gap: 10px; }
+  .community-actions > * { flex: 1; padding-inline: 8px; }
+  #membership-status { cursor: default; }
+  #community-events .event-body, #community-members .info-row { overflow-wrap: anywhere; }
+  .undated-badge { padding: 4px; font-size: 0.75rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <a class="icon-btn on-dark" id="back" href="comunitats.html" aria-label="Tornar a comunitats"></a>
+    <div class="community-heading">
+      <span class="avatar community-avatar hidden" id="community-avatar" aria-hidden="true"></span>
+      <div class="community-heading-copy">
+        <h1 class="title title-lg" id="community-title">Comunitat</h1>
+        <p class="hero-sub hidden" id="community-summary"></p>
+      </div>
+    </div>
+    <div class="community-actions hidden" id="community-actions">
+      <span class="btn btn-secondary btn-small hidden" id="membership-status" role="status">Ets membre</span>
+      <button class="btn btn-secondary btn-small hidden" id="join-community" type="button">Unir-se</button>
+      <a class="btn btn-primary btn-small hidden" id="create-event" href="nova-quedada.html">Crear quedada</a>
+    </div>
+  </header>
+
+  <main class="screen">
+    <div id="community-loading" class="empty" role="status">S’està carregant la comunitat…</div>
+    <div id="community-error" class="error hidden" role="alert"></div>
+
+    <div class="tabs hidden" id="community-tabs" role="tablist" aria-label="Detall de la comunitat">
+      <button class="tab" id="events-tab" type="button" role="tab" aria-selected="true" aria-controls="community-events">Quedades</button>
+      <button class="tab" id="members-tab" type="button" role="tab" aria-selected="false" aria-controls="community-members" tabindex="-1">Participants</button>
+    </div>
+    <div id="community-events" class="list hidden" role="tabpanel" aria-labelledby="events-tab" tabindex="0" aria-live="polite"></div>
+    <div id="community-members" class="list hidden" role="tabpanel" aria-labelledby="members-tab" tabindex="0" aria-live="polite"></div>
+  </main>
+</div>
+<script src="js/afinit.js"></script>
+<script src="js/detall-comunitats.js"></script>
+</body>
+</html>

@@ -363,9 +363,10 @@ select.input { padding: 0 8px; }
   color: inherit;
   font: inherit;
   text-align: left;
+  text-decoration: none;
 }
-button.community-card-content { cursor: pointer; }
-button.community-card-content:focus-visible {
+a.community-card-content:hover { color: inherit; }
+a.community-card-content:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
@@ -404,18 +405,6 @@ button.community-card-content:focus-visible {
   flex-shrink: 0;
   padding-inline: 10px;
 }
-.community-detail {
-  width: min(calc(100% - 2rem), 390px);
-  max-height: calc(100% - 2rem);
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--bg);
-  color: var(--ink);
-  overflow-wrap: anywhere;
-}
-.community-detail::backdrop { background: rgb(0 0 0 / 65%); }
-.community-detail .section-title { margin-bottom: 10px; }
 
 /* ---------- Navegació inferior ---------- */
 .bottom-nav {
@@ -753,9 +742,6 @@ button.community-card-content:focus-visible {
   }
   .community-name { font-size: 16px; }
   .community-meta { font-size: 13px; }
-
-  /* Fitxa de detall */
-  .community-detail { width: min(calc(100% - 4rem), 560px); padding: 28px; }
 
   /* ---------- Perfil ---------- */
   .profile-layout { grid-template-columns: minmax(0, 1fr) 380px; }
