@@ -8,18 +8,45 @@ const weekdays = [...DOW_SHORT.slice(1), DOW_SHORT[0]];
 let selectedActivity = '';
 let latestRequest = 0;
 
+// Franges en comú, compactes: les hores seguides s'ajunten ("18–22 h") i els
+// dies amb les mateixes hores van junts -> "Ds, Dg · 08–22 h"
 function formatSharedSlots(slots) {
-  const daysByHour = new Map();
+  const hoursByDay = new Map();
   for (const { day, hour } of slots) {
-    if (!daysByHour.has(hour)) daysByHour.set(hour, new Set());
-    daysByHour.get(hour).add(day);
+    if (!hoursByDay.has(day)) hoursByDay.set(day, []);
+    hoursByDay.get(day).push(hour);
   }
-  return [...daysByHour].sort(([first], [second]) => first - second).map(([hour, days]) => {
-    const orderedDays = weekdays.filter(day => days.has(day));
-    const start = String(hour).padStart(2, '0');
-    const end = String(hour + 1).padStart(2, '0');
-    return `${orderedDays.join(', ')} · ${start}–${end} h`;
-  });
+  const pad = hour => String(hour).padStart(2, '0');
+  const daysByRanges = new Map();
+  for (const day of weekdays) {
+    const hours = [...new Set(hoursByDay.get(day) || [])].sort((a, b) => a - b);
+    if (!hours.length) continue;
+    const ranges = [];
+    for (let i = 0; i < hours.length; i++) {
+      const start = hours[i];
+      let end = start + 1;
+      while (i + 1 < hours.length && hours[i + 1] === end) { end++; i++; }
+      ranges.push(`${pad(start)}–${pad(end)} h`);
+    }
+    const key = ranges.join(', ');
+    if (!daysByRanges.has(key)) daysByRanges.set(key, []);
+    daysByRanges.get(key).push(day);
+  }
+  return [...daysByRanges].map(([ranges, days]) => `${days.join(', ')} · ${ranges}`);
+}
+
+const MAX_SLOT_LINES = 3;
+
+function slotsBlock(lines) {
+  if (!lines.length) return '';
+  const shown = lines.slice(0, MAX_SLOT_LINES);
+  const extra = lines.length - shown.length;
+  return `
+    <div class="slot-list">
+      <span class="slot-label">${icon('clock', 14)}Hores lliures en comú</span>
+      ${shown.map(line => `<span>${esc(line)}</span>`).join('')}
+      ${extra > 0 ? `<span class="muted">+${extra} ${extra === 1 ? 'franja més' : 'franges més'}</span>` : ''}
+    </div>`;
 }
 
 function personCard(person) {
@@ -27,7 +54,7 @@ function personCard(person) {
   const activities = person.activities.map(activity => `<span class="chip">${esc(activity)}</span>`).join('');
   const sharedSlots = formatSharedSlots(person.shared_slots);
   return `
-    <article class="event-card">
+    <article class="event-card person-card">
       <span class="avatar ${avatarClass(person.name)}" aria-hidden="true">${esc(initials(person.name))}</span>
       <div class="event-body">
         <h2 class="event-title" style="margin: 0; overflow-wrap: anywhere">${esc(name)}</h2>
@@ -36,7 +63,7 @@ function personCard(person) {
           ${activities}
           ${person.connected ? '<span>Ja hi tens connexió</span>' : ''}
         </div>
-        <div class="event-meta">${esc(sharedSlots.join(' / '))}</div>
+        ${slotsBlock(sharedSlots)}
       </div>
     </article>`;
 }

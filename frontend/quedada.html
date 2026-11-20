@@ -15,26 +15,30 @@
     <a class="icon-btn on-dark" href="quedades.html" aria-label="Tornar a quedades" id="back"></a>
     <div style="display: flex; flex-direction: column; gap: 10px">
       <span class="chip" id="activity">&nbsp;</span>
-      <h1 class="title" style="font-size: 30px; line-height: 1.1" id="title">Carregant…</h1>
+      <h1 class="title hero-title" style="font-size: 30px; line-height: 1.1" id="title">Carregant…</h1>
       <span class="hero-sub" id="organizer"></span>
     </div>
   </header>
 
-  <main class="screen" style="padding: 20px 24px; gap: 18px">
+  <main class="screen detail" style="padding: 20px 24px; gap: 18px">
     <div id="error" class="error hidden" role="alert"></div>
 
-    <div class="info-box" id="info"></div>
+    <div class="detail-main">
+      <h2 class="section-title desktop-only" style="margin: 0" id="about-title">Sobre la quedada</h2>
+      <p class="description" id="description"></p>
 
-    <p class="description" id="description"></p>
+      <section id="connections-section" class="hidden" style="display: flex; flex-direction: column; gap: 10px">
+        <h2 class="section-title" style="margin: 0">Hi van les teves connexions</h2>
+        <div class="people" id="connections"></div>
+      </section>
 
-    <section id="connections-section" class="hidden" style="display: flex; flex-direction: column; gap: 10px">
-      <h2 class="section-title" style="margin: 0">Hi van les teves connexions</h2>
-      <div class="people" id="connections"></div>
-    </section>
+      <div class="avatar-stack hidden" id="others"></div>
+    </div>
 
-    <div class="avatar-stack hidden" id="others"></div>
-
-    <button class="btn btn-primary btn-block" type="button" id="action" style="margin-top: auto" disabled>M’hi apunto</button>
+    <aside class="detail-aside">
+      <div class="info-box" id="info"></div>
+      <button class="btn btn-primary btn-block" type="button" id="action" style="margin-top: auto" disabled>M’hi apunto</button>
+    </aside>
   </main>
 </div>
 
@@ -42,6 +46,7 @@
 <script>
   const user = requireUser();
   const eventId = new URLSearchParams(location.search).get('id');
+  renderNav('quedades', { mobile: false });
   document.getElementById('back').innerHTML = icon('back');
 
   const els = {
@@ -82,6 +87,7 @@
 
     els.description.textContent = ev.description || '';
     els.description.classList.toggle('hidden', !ev.description);
+    document.getElementById('about-title').classList.toggle('hidden', !ev.description);
 
     const others = ev.attendees.filter(a => a.id !== user.id);
     const connections = others.filter(a => a.is_connection);

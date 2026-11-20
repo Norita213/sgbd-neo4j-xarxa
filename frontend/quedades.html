@@ -13,19 +13,28 @@
 <div class="app">
   <main class="screen">
     <div class="topbar">
-      <h1 class="title title-lg">Quedades</h1>
-      <a class="btn btn-primary btn-small" href="nova-quedada.html"><span id="plus"></span>Crear</a>
+      <div class="page-heading">
+        <h1 class="title title-lg">Quedades</h1>
+        <p class="page-sub muted desktop-only">Plans de la teva gent i de les teves activitats, a prop teu.</p>
+      </div>
+      <a class="btn btn-primary btn-small mobile-only" href="nova-quedada.html"><span id="plus"></span>Crear</a>
     </div>
 
-    <div class="tabs" role="tablist" aria-label="Filtre de quedades">
-      <button class="tab" type="button" role="tab" id="tab-foryou" aria-selected="true" aria-controls="list">Per a tu</button>
-      <button class="tab" type="button" role="tab" id="tab-nearby" aria-selected="false" aria-controls="list">Totes a prop</button>
+    <div class="layout">
+      <div class="layout-main">
+        <div class="tabs" role="tablist" aria-label="Filtre de quedades">
+          <button class="tab" type="button" role="tab" id="tab-foryou" aria-selected="true" aria-controls="list">Per a tu</button>
+          <button class="tab" type="button" role="tab" id="tab-nearby" aria-selected="false" aria-controls="list">Totes a prop</button>
+        </div>
+
+        <div id="list" class="list" role="tabpanel" aria-live="polite"></div>
+      </div>
+
+      <aside class="layout-aside panel">
+        <h2 class="section-title">Hi tens plaça</h2>
+        <div id="mine" class="list list-plain"></div>
+      </aside>
     </div>
-
-    <div id="list" class="list" role="tabpanel" aria-live="polite"></div>
-
-    <h2 class="section-title">Hi tens plaça</h2>
-    <div id="mine" class="list"></div>
   </main>
 </div>
 

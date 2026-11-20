@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comunitats · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+<div class="app">
+  <main class="screen">
+    <div class="page-heading">
+      <h1 class="title title-lg">Comunitats</h1>
+      <p class="page-sub muted desktop-only">Grups de gent amb les teves aficions, a Girona i voltants.</p>
+    </div>
+    <label class="community-search">
+      <span id="community-search-icon" aria-hidden="true"></span>
+      <input id="community-search" class="input" type="search" placeholder="Cerca per activitat o zona" aria-label="Cerca comunitats per activitat o zona">
+    </label>
+
+    <div id="community-status" class="empty" role="status">S’estan carregant les comunitats…</div>
+    <div id="community-sections" class="community-sections hidden">
+      <section class="community-section community-mine" aria-labelledby="your-communities-title">
+        <h2 id="your-communities-title" class="section-title">Les teves</h2>
+        <div id="your-communities" aria-live="polite"></div>
+      </section>
+      <section class="community-section community-discover" aria-labelledby="discover-communities-title">
+        <h2 id="discover-communities-title" class="section-title">Descobreix</h2>
+        <div id="discover-communities" aria-live="polite"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="js/afinit.js"></script>
+<script src="js/comunitats.js"></script>
+</body>
+</html>

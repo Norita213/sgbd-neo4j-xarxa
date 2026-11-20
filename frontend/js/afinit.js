@@ -124,6 +124,7 @@ const ICONS = {
   flag: '<path d="M5 21V4"></path><path d="M5 4h12l-2.5 4L17 12H5"></path>',
   calendar: '<rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path>',
   share: '<circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path>',
+  search: '<circle cx="10.5" cy="10.5" r="6"></circle><path d="m15 15 5 5"></path>',
   profile: '<circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path>',
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path>',
   moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>',
@@ -133,23 +134,59 @@ function icon(name, size = 22, strokeWidth = 2) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
 }
 
-// ---------- Navegació inferior ----------
+// ---------- Navegació ----------
 // Cada membre de l'equip canvia el seu 'href' quan tingui la pantalla feta.
 const NAV_ITEMS = [
   { key: 'afins', label: 'Afins', icon: 'users', href: 'afins.html' },
   { key: 'quedades', label: 'Quedades', icon: 'flag', href: 'quedades.html' },
   { key: 'calendari', label: 'Calendari', icon: 'calendar', href: 'calendari.html' },
-  { key: 'comunitats', label: 'Comunitats', icon: 'share', href: 'proximament.html?s=Comunitats' },
+  { key: 'comunitats', label: 'Comunitats', icon: 'share', href: 'comunitats.html' },
   { key: 'perfil', label: 'Perfil', icon: 'profile', href: 'perfil.html' },
 ];
-function renderNav(active) {
-  const nav = document.createElement('nav');
-  nav.className = 'bottom-nav';
-  nav.setAttribute('aria-label', 'Navegació principal');
-  nav.innerHTML = NAV_ITEMS.map(item =>
+// Logo (tres nodes connectats)
+function brandMark(size = 30) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 34 34" aria-hidden="true">
+    <line x1="9" y1="10" x2="25" y2="12" stroke="var(--primary)" stroke-width="2"></line>
+    <line x1="9" y1="10" x2="16" y2="25" stroke="var(--primary)" stroke-width="2"></line>
+    <line x1="25" y1="12" x2="16" y2="25" stroke="var(--primary)" stroke-width="2"></line>
+    <circle cx="9" cy="10" r="5" fill="var(--primary)"></circle>
+    <circle cx="25" cy="12" r="4" fill="var(--accent)"></circle>
+    <circle cx="16" cy="25" r="5" fill="var(--ink)"></circle>
+  </svg>`;
+}
+
+// Navegació: barra inferior al mòbil i capçalera superior a l'ordinador.
+// `mobile: false` -> només la capçalera (pantalles com el detall o el formulari,
+// que al mòbil no porten barra inferior).
+function renderNav(active, { mobile = true } = {}) {
+  const links = NAV_ITEMS.map(item =>
     `<a href="${item.href}"${item.key === active ? ' aria-current="page"' : ''}>${icon(item.icon)}${item.label}</a>`
   ).join('');
-  document.querySelector('.app').appendChild(nav);
+
+  if (mobile) {
+    const nav = document.createElement('nav');
+    nav.className = 'bottom-nav';
+    nav.setAttribute('aria-label', 'Navegació principal');
+    nav.innerHTML = links;
+    document.querySelector('.app').appendChild(nav);
+  }
+
+  const user = getUser();
+  const header = document.createElement('header');
+  header.className = 'site-header';
+  header.innerHTML = `
+    <div class="site-header-inner">
+      <a class="site-brand" href="quedades.html">${brandMark()}<span>AFINIT</span></a>
+      <nav class="site-nav" aria-label="Navegació principal">${links}</nav>
+      <div class="site-actions">
+        <a class="btn btn-primary btn-small" href="nova-quedada.html">${icon('plus', 18, 2.2)}Crear quedada</a>
+        ${user ? `<a class="site-user" href="perfil.html" title="El teu perfil">
+          <span class="avatar ${avatarClass(user.name)}">${esc(initials(user.name))}</span>
+          <span class="site-user-name">${esc(user.name)}</span>
+        </a>` : ''}
+      </div>
+    </div>`;
+  document.body.prepend(header);
 }
 
 // ---------- Targetes de quedada ----------

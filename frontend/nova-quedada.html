@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="app">
-  <form class="screen" id="form" style="padding: 20px 24px 32px" novalidate>
+  <form class="screen form-card" id="form" style="padding: 20px 24px 32px" novalidate>
     <div class="topbar-left">
       <a class="icon-btn" href="quedades.html" aria-label="Tornar a quedades" id="back"></a>
       <h1 class="title title-md">Nova quedada</h1>
@@ -84,6 +84,7 @@
 <script src="js/afinit.js"></script>
 <script>
   const user = requireUser();
+  renderNav('quedades', { mobile: false });
   document.getElementById('back').innerHTML = icon('back');
 
   const $ = (id) => document.getElementById(id);
@@ -111,6 +112,14 @@
       // Per defecte: la primera activitat que t'agrada i la teva zona
       if (profile.activities && profile.activities.length) $('activity').value = profile.activities[0];
       if (profile.zone) $('zone').value = profile.zone;
+      const communityId = new URLSearchParams(location.search).get('community_id');
+      const selectedCommunity = communities.find(community => community.id === communityId);
+      if (selectedCommunity) {
+        $('community').value = selectedCommunity.id;
+        $('activity').value = selectedCommunity.activity;
+        $('back').href = `detall-comunitats.html?id=${encodeURIComponent(selectedCommunity.id)}`;
+        $('back').setAttribute('aria-label', 'Tornar a la comunitat');
+      }
       updateHint();
     } catch (err) {
       showError(err.message);
