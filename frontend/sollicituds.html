@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sol·licituds · AFINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/afinit.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+<div class="app">
+  <main class="screen">
+    <div class="topbar">
+      <div class="topbar-left">
+        <a class="icon-btn" id="back" href="afins.html" aria-label="Torna a Persones afins"></a>
+        <h1 class="title title-lg">Sol·licituds</h1>
+      </div>
+    </div>
+    <div class="connection-inbox">
+      <section class="connection-panel" aria-labelledby="received-heading">
+        <h2 class="section-title" id="received-heading" tabindex="-1">Rebudes</h2>
+        <div id="received-requests" class="connection-list" aria-live="polite">Carregant…</div>
+      </section>
+      <section class="connection-panel" aria-labelledby="sent-heading">
+        <h2 class="section-title" id="sent-heading">Enviades</h2>
+        <div id="sent-requests" class="connection-list" aria-live="polite">Carregant…</div>
+      </section>
+    </div>
+    <div id="requests-error" class="error hidden" role="alert"></div>
+    <button id="requests-retry" class="btn btn-small btn-secondary hidden" type="button">Torna-ho a provar</button>
+  </main>
+</div>
+<script src="js/afinit.js"></script>
+<script type="module" src="js/sollicituds-page.js"></script>
+</body>
+</html>

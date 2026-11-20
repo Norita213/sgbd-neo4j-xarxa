@@ -5,19 +5,20 @@ const filters = document.getElementById('activity-filters');
 const list = document.getElementById('recommendations');
 const retry = document.getElementById('retry');
 const weekdays = [...DOW_SHORT.slice(1), DOW_SHORT[0]];
+const weekdayList = new Intl.ListFormat('ca', { type: 'conjunction' });
+const connectionStates = new Map();
 let selectedActivity = '';
 let latestRequest = 0;
 
-// Franges en comú, compactes: les hores seguides s'ajunten ("18–22 h") i els
-// dies amb les mateixes hores van junts -> "Ds, Dg · 08–22 h"
+// Agrupem les hores consecutives i els dies que comparteixen les mateixes franges.
 function formatSharedSlots(slots) {
   const hoursByDay = new Map();
   for (const { day, hour } of slots) {
     if (!hoursByDay.has(day)) hoursByDay.set(day, []);
     hoursByDay.get(day).push(hour);
   }
-  const pad = hour => String(hour).padStart(2, '0');
-  const daysByRanges = new Map();
+  const formatHour = hour => String(hour).padStart(2, '0') + ':00';
+  const groups = new Map();
   for (const day of weekdays) {
     const hours = [...new Set(hoursByDay.get(day) || [])].sort((a, b) => a - b);
     if (!hours.length) continue;
@@ -26,26 +27,32 @@ function formatSharedSlots(slots) {
       const start = hours[i];
       let end = start + 1;
       while (i + 1 < hours.length && hours[i + 1] === end) { end++; i++; }
-      ranges.push(`${pad(start)}–${pad(end)} h`);
+      ranges.push(`${formatHour(start)}–${formatHour(end)}`);
     }
     const key = ranges.join(', ');
-    if (!daysByRanges.has(key)) daysByRanges.set(key, []);
-    daysByRanges.get(key).push(day);
+    if (!groups.has(key)) groups.set(key, { days: [], ranges });
+    groups.get(key).days.push(DOW_LONG[DOW_SHORT.indexOf(day)].toLocaleLowerCase('ca'));
   }
-  return [...daysByRanges].map(([ranges, days]) => `${days.join(', ')} · ${ranges}`);
+  return [...groups.values()];
 }
 
-const MAX_SLOT_LINES = 3;
-
-function slotsBlock(lines) {
-  if (!lines.length) return '';
-  const shown = lines.slice(0, MAX_SLOT_LINES);
-  const extra = lines.length - shown.length;
+function slotsBlock(groups) {
+  if (!groups.length) return '';
   return `
     <div class="slot-list">
       <span class="slot-label">${icon('clock', 14)}Hores lliures en comú</span>
-      ${shown.map(line => `<span>${esc(line)}</span>`).join('')}
-      ${extra > 0 ? `<span class="muted">+${extra} ${extra === 1 ? 'franja més' : 'franges més'}</span>` : ''}
+      <ul class="slot-groups" role="list">
+        ${groups.map(({ days, ranges }) => {
+          const label = weekdayList.format(days);
+          return `
+            <li class="slot-group">
+              <span class="slot-days">${esc(label[0].toLocaleUpperCase('ca') + label.slice(1))}</span>
+              <div class="slot-hours">
+                ${ranges.map(range => `<span class="slot-hour">${esc(range)}</span>`).join('')}
+              </div>
+            </li>`;
+        }).join('')}
+      </ul>
     </div>`;
 }
 
@@ -61,11 +68,32 @@ function personCard(person) {
         <div class="event-meta">${esc(person.zone)}${person.nearby_zone ? ' · Zona propera' : ''}</div>
         <div class="event-tags">
           ${activities}
-          ${person.connected ? '<span>Ja hi tens connexió</span>' : ''}
         </div>
         ${slotsBlock(sharedSlots)}
+        ${person.id ? `
+          <div class="event-tags" data-connection-id="${esc(person.id)}" data-name="${esc(person.name)}">
+            ${connectionAction(person.id, person.name, person.connected)}
+          </div>` : ''}
       </div>
     </article>`;
+}
+
+function connectionAction(id, name, connected = false) {
+  const state = connectionStates.get(id);
+  if (connected || state === 'connected') return '<span class="chip">Connectats</span>';
+  const busy = state === 'pending';
+  return `<button class="btn btn-small btn-secondary" type="button" data-connect
+    aria-label="${busy ? 'Connectant amb' : 'Connectar amb'} ${esc(name)}"${busy ? ' disabled' : ''}>
+    ${busy ? 'Connectant…' : 'Connectar'}
+  </button>`;
+}
+
+function updateConnectionActions(id) {
+  for (const action of list.querySelectorAll('[data-connection-id]')) {
+    if (action.dataset.connectionId === id) {
+      action.innerHTML = connectionAction(id, action.dataset.name);
+    }
+  }
 }
 
 function updateFilterSelection() {
@@ -119,6 +147,24 @@ filters.addEventListener('click', event => {
   selectedActivity = button.dataset.activity;
   updateFilterSelection();
   loadRecommendations();
+});
+list.addEventListener('click', async event => {
+  const button = event.target.closest('button[data-connect]');
+  if (!button) return;
+  const { connectionId: id } = button.closest('[data-connection-id]').dataset;
+  if (connectionStates.has(id)) return;
+
+  connectionStates.set(id, 'pending');
+  updateConnectionActions(id);
+  try {
+    await api(`/persons/${encodeURIComponent(user.id)}/connections/${encodeURIComponent(id)}`, { method: 'POST' });
+    connectionStates.set(id, 'connected');
+  } catch (err) {
+    connectionStates.delete(id);
+    toast(err.message);
+  } finally {
+    updateConnectionActions(id);
+  }
 });
 retry.addEventListener('click', loadRecommendations);
 loadRecommendations();
