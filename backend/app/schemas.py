@@ -85,6 +85,7 @@ class PersonUpdate(BaseModel):
     name: str | None = None
     surname: str | None = None
     username: str | None = None
+    current_password: str | None = None
     password: str | None = Field(default=None, min_length=4)
     age: int | None = Field(default=None, ge=0, le=120)
     zone: str | None = None
@@ -130,6 +131,14 @@ class PersonUpdate(BaseModel):
         if "@" not in clean or "." not in clean.split("@")[-1]:
             raise ValueError("Escriu un correu electrònic vàlid")
         return clean
+
+    @model_validator(mode="after")
+    def check_passwords_change(self):
+        if self.password and not self.current_password:
+            raise ValueError("Cal indicar la contrasenya actual per canviar-la")
+        if self.current_password and not self.password:
+            raise ValueError("Cal indicar la nova contrasenya per canviar-la")
+        return self
 
 
 class SlotRange(BaseModel):

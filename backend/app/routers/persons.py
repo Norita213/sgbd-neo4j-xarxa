@@ -53,7 +53,7 @@ def get_profile(person_id: str):
            WITH p, z, activities, connections, count(DISTINCT e) AS events
            OPTIONAL MATCH (p)-[:MEMBER_OF]->(cm:Community)
            RETURN p.id AS id, p.name AS name, p.surname AS surname,
-                  p.username AS username, p.age AS age, z.name AS zone,
+                  p.username AS username, p.email AS email, p.age AS age, z.name AS zone,
                   activities, connections, events,
                   collect(DISTINCT cm.name) AS communities""",
         id=person_id,
@@ -72,8 +72,8 @@ def get_profile(person_id: str):
 
 @router.put("/{person_id}")
 def update_profile(person_id: str, body: PersonUpdate):
-    """'Editar perfil': nom, cognoms, nom d'usuari, contrasenya, edat, zona i activitats."""
-    from .auth import hash_password, normalize_username
+    """'Editar perfil': nom, cognoms, nom d'usuari, correu, contrasenya, edat, zona i activitats."""
+    from .auth import hash_password, normalize_username, verify_password
 
     require_person(person_id)
 
@@ -88,6 +88,7 @@ def update_profile(person_id: str, body: PersonUpdate):
         if conflict:
             raise HTTPException(409, "Aquest nom d'usuari ja està en ús")
 
+    email = None
     if body.email is not None:
         email = body.email.strip().lower()
         dup_email = run_query(
@@ -97,10 +98,19 @@ def update_profile(person_id: str, body: PersonUpdate):
         )
         if dup_email:
             raise HTTPException(409, "Ja existeix un compte amb aquest correu")
-        set.append("p.email = $email")
-        params["email"] = email
 
-    password_hash = hash_password(body.password) if body.password else None
+    password_hash = None
+    if body.password is not None:
+        existing = run_query(
+            "MATCH (p:Person {id:$id}) RETURN p.passwordHash AS hash",
+            id=person_id,
+        )
+        if not existing:
+            raise HTTPException(404, "Usuari no trobat")
+        if not verify_password(body.current_password or "", existing[0].get("hash")):
+            raise HTTPException(403, "Contrasenya actual incorrecta")
+        password_hash = hash_password(body.password)
+
     name = body.name.strip() if body.name is not None else None
     surname = body.surname.strip() if body.surname is not None else None
 
@@ -109,12 +119,14 @@ def update_profile(person_id: str, body: PersonUpdate):
            SET p.name = coalesce($name, p.name),
                p.surname = coalesce($surname, p.surname),
                p.username = coalesce($username, p.username),
+               p.email = coalesce($email, p.email),
                p.passwordHash = coalesce($password_hash, p.passwordHash),
                p.age = coalesce($age, p.age)""",
         id=person_id,
         name=name,
         surname=surname,
         username=username,
+        email=email,
         password_hash=password_hash,
         age=body.age,
     )

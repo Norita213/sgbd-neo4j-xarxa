@@ -94,6 +94,13 @@
         <label for="email">Correu electrònic</label>
         <input id="email" class="input" type="email" autocomplete="email" required>
       </div>
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="current-password">Contrasenya actual</label>
+        <input id="current-password" class="input" type="password" autocomplete="off" placeholder="Escriu-la per canviar la contrasenya" minlength="4">
+      </div>
       <div class="field">
         <label for="password">Nova contrasenya</label>
         <input id="password" class="input" type="password" autocomplete="new-password" minlength="4" placeholder="Deixa-ho buit per mantenir">
@@ -293,12 +300,15 @@
         $('email').focus();
         return;
       }
+    const currentPassword = $('current-password').value;
     const password = $('password').value;
     const slots = getMergedRanges();
 
-    if (!name) { showError('El nom no pot quedar buit.'); $('name').focus(); return; }
+    if (!name) {showError('El nom no pot quedar buit.'); $('name').focus(); return; }
     if (!surname) { showError('Els cognoms no poden quedar buits.'); $('surname').focus(); return; }
     if (!username || /\s/.test(username)) { showError('El nom d’usuari no és vàlid (no pot tenir espais).'); $('username').focus(); return; }
+    if (password && !currentPassword) { showError('Escriu la contrasenya actual per poder canviar-la.'); $('current-password').focus(); return; }
+    if (currentPassword && !password) { showError('Escriu la nova contrasenya o deixa els dos camps buits per mantenir-la.'); $('password').focus(); return; }
     if (password && password.length < 4) { showError('La nova contrasenya ha de tenir almenys 4 caràcters.'); $('password').focus(); return; }
     if (!selectedActivities.size) { showError('Tria almenys una activitat.'); return; }
     if (!slots.length) { showError('Afegeix almenys una franja disponible.'); return; }
@@ -314,6 +324,8 @@
           name,
           surname,
           username: username.toLowerCase(),
+          email,
+          current_password: currentPassword || null,
           password: password || null,
           age: ageVal ? parseInt(ageVal, 10) : null,
           zone: $('zone').value,
