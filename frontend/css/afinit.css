@@ -536,7 +536,7 @@ a.community-card-content:focus-visible {
 }
 /* ---------- Persones afins: franges en comú ---------- */
 .slot-list {
-  display: flex; flex-direction: column; gap: 2px;
+  display: flex; flex-direction: column; gap: 6px;
   margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--divider);
   font-size: 13px; color: var(--text);
 }
@@ -545,6 +545,19 @@ a.community-card-content:focus-visible {
   font-size: 12px; font-weight: 600; color: var(--muted);
 }
 .slot-label svg { color: var(--primary); }
+.slot-groups { display: grid; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.slot-group {
+  display: grid; gap: 5px; min-width: 0;
+  padding: 7px 9px; border-radius: var(--radius-sm); background: var(--track);
+}
+.slot-days { color: var(--ink); font-weight: 600; }
+.slot-hours { display: flex; flex-wrap: wrap; gap: 4px; }
+.slot-hour {
+  padding: 2px 7px; border-radius: var(--radius-sm);
+  background: var(--primary-soft); color: var(--primary);
+  font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 
 /* =====================================================================
    DISTRIBUCIÓ: mòbil vs ordinador
@@ -655,7 +668,7 @@ a.community-card-content:focus-visible {
   .person-card { padding: 22px; gap: 16px; }
   .person-card > .avatar { width: 48px; height: 48px; font-size: 15px; }
   .person-card .event-title { font-size: 19px; }
-  .slot-list { font-size: 14px; gap: 3px; }
+  .slot-list { font-size: 14px; }
   .slot-label { font-size: 13px; }
 
   /* ---------- Inici de sessió: pantalla partida ---------- */
