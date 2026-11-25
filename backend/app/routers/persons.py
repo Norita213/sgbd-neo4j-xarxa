@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, params
 
 from db import run_query
 
@@ -33,7 +33,8 @@ def list_persons():
     return run_query(
         """MATCH (p:Person)
            OPTIONAL MATCH (p)-[:LIVES_IN]->(z:Zone)
-           RETURN p.id AS id, p.name AS name, p.age AS age, p.email AS email, z.name AS zone
+           RETURN p.id AS id, p.name AS name, p.surname AS surname,
+                  p.username AS username, p.age AS age, z.name AS zone
            ORDER BY name"""
     )
 
@@ -51,7 +52,8 @@ def get_profile(person_id: str):
            OPTIONAL MATCH (p)-[:ATTENDS]->(e:Event)
            WITH p, z, activities, connections, count(DISTINCT e) AS events
            OPTIONAL MATCH (p)-[:MEMBER_OF]->(cm:Community)
-           RETURN p.id AS id, p.name AS name, p.age AS age, p.email AS email, z.name AS zone,
+           RETURN p.id AS id, p.name AS name, p.surname AS surname,
+                  p.username AS username, p.email AS email, p.age AS age, z.name AS zone,
                   activities, connections, events,
                   collect(DISTINCT cm.name) AS communities""",
         id=person_id,
@@ -70,12 +72,63 @@ def get_profile(person_id: str):
 
 @router.put("/{person_id}")
 def update_profile(person_id: str, body: PersonUpdate):
-    """'Editar perfil': nom, edat, zona i activitats (tot opcional)."""
+    """'Editar perfil': nom, cognoms, nom d'usuari, correu, contrasenya, edat, zona i activitats."""
+    from .auth import hash_password, normalize_username, verify_password
+
     require_person(person_id)
+
+    username = None
+    if body.username is not None:
+        username = normalize_username(body.username)
+        conflict = run_query(
+            "MATCH (p:Person {username:$username}) WHERE p.id <> $id RETURN p.id AS id",
+            username=username,
+            id=person_id,
+        )
+        if conflict:
+            raise HTTPException(409, "Aquest nom d'usuari ja està en ús")
+
+    email = None
+    if body.email is not None:
+        email = body.email.strip().lower()
+        dup_email = run_query(
+            "MATCH (p:Person {email:$email}) WHERE p.id <> $id RETURN p.id AS id",
+            email=email,
+            id=person_id,
+        )
+        if dup_email:
+            raise HTTPException(409, "Ja existeix un compte amb aquest correu")
+
+    password_hash = None
+    if body.password is not None:
+        existing = run_query(
+            "MATCH (p:Person {id:$id}) RETURN p.passwordHash AS hash",
+            id=person_id,
+        )
+        if not existing:
+            raise HTTPException(404, "Usuari no trobat")
+        if not verify_password(body.current_password or "", existing[0].get("hash")):
+            raise HTTPException(403, "Contrasenya actual incorrecta")
+        password_hash = hash_password(body.password)
+
+    name = body.name.strip() if body.name is not None else None
+    surname = body.surname.strip() if body.surname is not None else None
+
     run_query(
         """MATCH (p:Person {id:$id})
-           SET p.name = coalesce($name, p.name), p.age = coalesce($age, p.age)""",
-        id=person_id, name=body.name, age=body.age,
+           SET p.name = coalesce($name, p.name),
+               p.surname = coalesce($surname, p.surname),
+               p.username = coalesce($username, p.username),
+               p.email = coalesce($email, p.email),
+               p.passwordHash = coalesce($password_hash, p.passwordHash),
+               p.age = coalesce($age, p.age)""",
+        id=person_id,
+        name=name,
+        surname=surname,
+        username=username,
+        email=email,
+        password_hash=password_hash,
+        age=body.age,
     )
     if body.zone is not None:
         run_query(
@@ -83,9 +136,10 @@ def update_profile(person_id: str, body: PersonUpdate):
                OPTIONAL MATCH (p)-[r:LIVES_IN]->()
                DELETE r
                WITH DISTINCT p
-               MERGE (z:Zone {name:$zone})
+               MATCH (z:Zone {name:$zone})
                MERGE (p)-[:LIVES_IN]->(z)""",
-            id=person_id, zone=body.zone,
+            id=person_id,
+            zone=body.zone,
         )
     if body.activities is not None:
         set_activities_for(person_id, body.activities)
